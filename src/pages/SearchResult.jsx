@@ -28,56 +28,32 @@ export default function SearchResult() {
     localStorage.setItem("favorites", JSON.stringify(favorites));
   }, [favorites]);
 
-  // ✅ 내가 등록한 레시피 불러오기 (localStorage)
-  const fetchUserRecipes = (keyword) => {
-    const stored = JSON.parse(localStorage.getItem("customRecipes")) || [];
-    if (!keyword) return stored;
-    // 재료나 제목에 검색어가 포함된 레시피만
-    return stored.filter(
-      (r) =>
-        r.title.toLowerCase().includes(keyword.toLowerCase()) ||
-        r.ingredients.toLowerCase().includes(keyword.toLowerCase())
-    );
-  };
-
-  // ✅ 공공데이터 API + 사용자 등록 레시피 통합 불러오기
+  // ✅ 레시피 불러오기
   const fetchRecipes = async (keyword) => {
     if (!keyword) return;
     setLoading(true);
-
     try {
-      // ✅ 사용자 등록 레시피 먼저 불러오기
-      const userRecipes = fetchUserRecipes(keyword);
-
-      // ✅ 공공데이터 API 호출
-      const url = `https://openapi.foodsafetykorea.go.kr/api/${RECIPE_KEY}/COOKRCP01/json/1/50/RCP_PARTS_DTLS=${encodeURIComponent(
+      const url = `https://openapi.foodsafetykorea.go.kr/api/${RECIPE_KEY}/COOKRCP01/json/1/30/RCP_PARTS_DTLS=${encodeURIComponent(
         keyword
       )}`;
-      const response = await axios.get(url);
-      const data = response.data?.COOKRCP01?.row || [];
 
-      // ✅ 통합 결과 (내 레시피 + API 레시피)
-      // localStorage에서 불러온 레시피는 식별 위해 id 사용, API는 RCP_SEQ 사용
-      const merged = [
-        ...userRecipes.map((r) => ({
-          id: r.id,
-          title: r.title,
-          image: r.image,
-          ingredients: r.ingredients,
-          steps: r.steps,
-          author: r.author,
-          type: "local",
-        })),
-        ...data.map((d) => ({
-          id: d.RCP_SEQ,
-          title: d.RCP_NM,
-          image: d.ATT_FILE_NO_MAIN,
-          ingredients: d.RCP_PARTS_DTLS,
-          steps: "",
-          author: "공공데이터",
-          type: "api",
-        })),
-      ];
+      const response = await axios.get(url);
+      const data = response.data?.COOKRCP01?.row;
+
+      if (!data || data.length === 0) {
+        setRecipes([]);
+        setLoading(false);
+        return;
+      }
+
+      // ✅ 공공데이터 원본 그대로 저장 (MANUAL01~20 포함)
+      const merged = data.map((d) => ({
+        ...d,
+        id: d.RCP_SEQ,
+        title: d.RCP_NM,
+        image: d.ATT_FILE_NO_MAIN,
+        ingredients: d.RCP_PARTS_DTLS,
+      }));
 
       setRecipes(merged);
     } catch (error) {
@@ -99,21 +75,23 @@ export default function SearchResult() {
     fetchRecipes(query);
   };
 
-  // ✅ 즐겨찾기 토글 (localStorage 반영)
+  // ✅ 즐겨찾기 토글
   const toggleFavorite = (recipe) => {
-    const alreadyFavorite = favorites.some((f) => f.id === recipe.id);
+    const alreadyFavorite = favorites.some((f) => f.RCP_SEQ === recipe.RCP_SEQ);
     let updatedFavorites;
+
     if (alreadyFavorite) {
-      updatedFavorites = favorites.filter((f) => f.id !== recipe.id);
+      updatedFavorites = favorites.filter((f) => f.RCP_SEQ !== recipe.RCP_SEQ);
     } else {
       updatedFavorites = [...favorites, recipe];
     }
+
     setFavorites(updatedFavorites);
     localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
   };
 
   const isFavorite = (recipe) =>
-    favorites.some((f) => f.id === recipe.id);
+    favorites.some((f) => f.RCP_SEQ === recipe.RCP_SEQ);
 
   return (
     <div className="search-result-page">
@@ -146,15 +124,20 @@ export default function SearchResult() {
             {recipes.length > 0 ? (
               recipes.map((item) => (
                 <div
-                  key={item.id}
+                  key={item.RCP_SEQ}
                   className="recipe-card"
                   onClick={() => setSelectedRecipe(item)}
                 >
-                  <img src={item.image} alt={item.title} />
-                  <h3>{item.title}</h3>
-                  <p className="recipe-author">
-                    👩‍🍳 {item.author || "알 수 없음"}
-                  </p>
+                  {/* ✅ 이미지 null 방지 */}
+                  <img
+                    src={
+                      item.ATT_FILE_NO_MAIN && item.ATT_FILE_NO_MAIN.trim() !== ""
+                        ? item.ATT_FILE_NO_MAIN
+                        : "https://via.placeholder.com/200x150?text=No+Image"
+                    }
+                    alt={item.RCP_NM || "레시피 이미지"}
+                  />
+                  <h3>{item.RCP_NM || "이름 없는 레시피"}</h3>
                 </div>
               ))
             ) : (
@@ -166,14 +149,8 @@ export default function SearchResult() {
 
       {/* 🧾 모달 (레시피 상세) */}
       {selectedRecipe && (
-        <div
-          className="modal-overlay"
-          onClick={() => setSelectedRecipe(null)}
-        >
-          <div
-            className="modal-content"
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="modal-overlay" onClick={() => setSelectedRecipe(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button
               className="close-btn"
               onClick={() => setSelectedRecipe(null)}
@@ -182,17 +159,22 @@ export default function SearchResult() {
             </button>
 
             <img
-              src={selectedRecipe.image}
-              alt={selectedRecipe.title}
+              src={
+                selectedRecipe.ATT_FILE_NO_MAIN &&
+                selectedRecipe.ATT_FILE_NO_MAIN.trim() !== ""
+                  ? selectedRecipe.ATT_FILE_NO_MAIN
+                  : "https://via.placeholder.com/200x150?text=No+Image"
+              }
+              alt={selectedRecipe.RCP_NM}
             />
-            <h2>{selectedRecipe.title}</h2>
-            <p>{selectedRecipe.ingredients}</p>
+            <h2>{selectedRecipe.RCP_NM}</h2>
+            <p>{selectedRecipe.RCP_PARTS_DTLS}</p>
 
             <div className="modal-buttons">
               <button
                 className="detail-btn"
                 onClick={() => {
-                  navigate(`/recipe/${selectedRecipe.id}`, {
+                  navigate(`/recipe/${selectedRecipe.RCP_SEQ}`, {
                     state: { recipe: selectedRecipe },
                   });
                 }}

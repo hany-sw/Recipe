@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://127.0.0.1:8183/api"; // 백엔드 주소
+const BASE_URL = "http://210.110.33.220:8183/api"; // 백엔드 주소
 
 // Axios 인스턴스 생성
 const instance = axios.create({
@@ -61,5 +61,17 @@ export const updateProfile = (data) => instance.put("/profile", data);
 export const recommendRecipes = (ingredients) =>
   instance.post("/recommend", { ingredients });
 export const getRecipeById = (id) => instance.get(`/recipe/${id}`);
+
+// ✅ 게시판 관련 API 추가
+export const getAllBoards = () => instance.get("/board");
+
+export const createBoard = (title, content) =>
+  instance.post("/board", { title, content });
+
+export const updateBoard = (boardId, title, content) =>
+  instance.put(`/board/${boardId}`, { title, content });
+
+export const deleteBoard = (boardId) =>
+  instance.delete(`/board/${boardId}`);
 
 export default instance;

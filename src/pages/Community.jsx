@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import axios from "axios";
 import { getProfile } from "../api/api";
 import "../styles/Community.css";
 
@@ -11,9 +12,11 @@ export default function Community() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [editPost, setEditPost] = useState(null);
-  const [showMyPosts, setShowMyPosts] = useState(false); // ✅ 내가 쓴 글 보기 상태
+  const [showMyPosts, setShowMyPosts] = useState(false);
 
-  // ✅ 로그인 사용자 정보 불러오기
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://210.110.33.220:8183/api";
+
+  // ✅ 로그인 사용자 불러오기
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -26,40 +29,75 @@ export default function Community() {
     fetchProfile();
   }, []);
 
+  // ✅ 전체 게시글 불러오기 함수
+  const fetchPosts = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/board`);
+      setPosts(res.data);
+    } catch (err) {
+      console.error("게시글 불러오기 실패:", err);
+    }
+  };
+
+  // ✅ 페이지 로드시 게시글 불러오기
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
   // ✅ 글 등록
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!title.trim() || !content.trim()) return;
+    if (!title.trim() || !content.trim()) return alert("제목과 내용을 입력하세요.");
 
-    const newPost = {
-      id: Date.now(),
-      title,
-      content,
-      authorName: currentUser?.username || "익명",
-      authorEmail: currentUser?.email || "unknown",
-      createdAt: new Date().toLocaleString(),
-    };
+    try {
+      await axios.post(
+        `${BASE_URL}/board`,
+        { title, content },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
 
-    setPosts([newPost, ...posts]);
-    setTitle("");
-    setContent("");
-    setModalOpen(false);
+      // ✅ 등록 완료 후 바로 목록 새로고침
+      await fetchPosts();
+
+      // ✅ 모달 닫기 + 입력 초기화
+      setTitle("");
+      setContent("");
+      setModalOpen(false);
+
+      alert("게시글이 등록되었습니다!");
+    } catch (err) {
+      console.error("게시글 등록 실패:", err);
+      alert("게시글 등록 중 오류가 발생했습니다.");
+    }
   };
 
   // ✅ 글 삭제
-  const handleDelete = (id, authorEmail) => {
+  const handleDelete = async (boardId, authorEmail) => {
     if (authorEmail !== currentUser?.email) {
-      alert("본인이 작성한 게시물만 삭제할 수 있습니다.");
-      return;
+      return alert("본인이 작성한 게시물만 삭제할 수 있습니다.");
     }
-    if (window.confirm("정말 이 게시물을 삭제하시겠습니까?")) {
-      setPosts(posts.filter((post) => post.id !== id));
+    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+
+    try {
+      await axios.delete(`${BASE_URL}/board/${boardId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      alert("삭제 완료!");
+      await fetchPosts(); // ✅ 삭제 후 목록 갱신
+    } catch (err) {
+      console.error("게시글 삭제 실패:", err);
     }
   };
 
-  // ✅ 글 수정
+  // ✅ 글 수정 모달 열기
   const openEditModal = (post) => {
-    if (post.authorEmail !== currentUser?.email) {
+    if (post.user?.email !== currentUser?.email) {
       alert("본인이 작성한 게시물만 수정할 수 있습니다.");
       return;
     }
@@ -67,28 +105,39 @@ export default function Community() {
     setEditModalOpen(true);
   };
 
-  const handleEditSave = (e) => {
+  // ✅ 글 수정 저장
+  const handleEditSave = async (e) => {
     e.preventDefault();
-    setPosts(
-      posts.map((p) =>
-        p.id === editPost.id
-          ? { ...p, title: editPost.title, content: editPost.content }
-          : p
-      )
-    );
-    setEditModalOpen(false);
+    try {
+      await axios.put(
+        `${BASE_URL}/board/${editPost.boardId}`,
+        {
+          title: editPost.title,
+          content: editPost.content,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+      alert("수정 완료!");
+      setEditModalOpen(false);
+      await fetchPosts(); // ✅ 수정 후 목록 갱신
+    } catch (err) {
+      console.error("게시글 수정 실패:", err);
+    }
   };
 
-  // ✅ 내가 쓴 글만 필터링
+  // ✅ 내가 쓴 글만 보기
   const filteredPosts = showMyPosts
-    ? posts.filter((post) => post.authorEmail === currentUser?.email)
+    ? posts.filter((p) => p.user?.email === currentUser?.email)
     : posts;
 
   return (
     <div className="community-page">
       <h1>자유게시판</h1>
 
-      {/* 내가 쓴 글 보기 모드 */}
       {showMyPosts && (
         <div className="my-posts-banner">
           ✏️ 내가 쓴 글 목록입니다.
@@ -96,16 +145,16 @@ export default function Community() {
         </div>
       )}
 
-      {/* 게시물 리스트 */}
+      {/* ✅ 게시물 리스트 */}
       {filteredPosts.length === 0 ? (
         <div className="empty-bubble">💬 등록된 글이 없습니다</div>
       ) : (
         <div className="post-list">
           {filteredPosts.map((post) => (
-            <div key={post.id} className="post">
+            <div key={post.boardId} className="post">
               <div className="post-header">
                 <h3>{post.title}</h3>
-                {currentUser?.email === post.authorEmail && (
+                {currentUser?.email === post.user?.email && (
                   <div className="post-actions">
                     <button
                       className="edit-btn"
@@ -115,9 +164,7 @@ export default function Community() {
                     </button>
                     <button
                       className="delete-btn"
-                      onClick={() =>
-                        handleDelete(post.id, post.authorEmail)
-                      }
+                      onClick={() => handleDelete(post.boardId, post.user?.email)}
                     >
                       🗑️
                     </button>
@@ -127,9 +174,11 @@ export default function Community() {
               <p className="post-content">{post.content}</p>
               <div className="post-info">
                 <span className="post-author">
-                  작성자: {post.authorName} ({post.authorEmail})
+                  작성자: {post.user?.username} ({post.user?.email})
                 </span>
-                <span className="post-date">{post.createdAt}</span>
+                <span className="post-date">
+                  {new Date(post.createdAt).toLocaleString()}
+                </span>
               </div>
             </div>
           ))}

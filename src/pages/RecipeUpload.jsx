@@ -132,7 +132,6 @@ export default function RecipeUpload() {
   return (
     <div className="upload-page">
       <h1>내 레시피 관리</h1>
-      <p className="sub-text">{user?.username}님의 레시피</p>
 
       {/* 플로팅 버튼 */}
       <button className="add-btn" onClick={() => setIsModalOpen(true)}>

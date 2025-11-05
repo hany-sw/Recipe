@@ -14,8 +14,8 @@ export default function FavoritePage() {
   }, []);
 
   // ✅ 즐겨찾기 삭제
-  const removeFavorite = (RCP_SEQ) => {
-    const updated = favorites.filter((f) => f.RCP_SEQ !== RCP_SEQ);
+  const removeFavorite = (id) => {
+    const updated = favorites.filter((f) => f.id !== id);
     setFavorites(updated);
     localStorage.setItem("favorites", JSON.stringify(updated));
   };
@@ -30,18 +30,22 @@ export default function FavoritePage() {
         <div className="favorite-list">
           {favorites.map((r) => (
             <div
-              key={r.RCP_SEQ}
+              key={r.id}
               className="favorite-card"
-              onClick={() => setSelectedRecipe(r)} // ✅ 카드 클릭 시 모달 열기
+              onClick={() => setSelectedRecipe(r)}
             >
-              <img src={r.ATT_FILE_NO_MAIN} alt={r.RCP_NM} />
+              <img
+                src={r.image || "/no-image.png"} // ✅ 안전 처리
+                alt={r.title || "레시피 이미지"}
+              />
               <div className="favorite-info">
-                <h3>{r.RCP_NM}</h3>
+                <h3>{r.title || "제목 없음"}</h3>
+                <p className="author">👩‍🍳 {r.author}</p>
                 <button
                   className="remove-btn"
                   onClick={(e) => {
-                    e.stopPropagation(); // 카드 클릭과 충돌 방지
-                    removeFavorite(r.RCP_SEQ);
+                    e.stopPropagation();
+                    removeFavorite(r.id);
                   }}
                 >
                   삭제
@@ -54,33 +58,24 @@ export default function FavoritePage() {
 
       {/* 🧾 모달 (즐겨찾기 상세 보기) */}
       {selectedRecipe && (
-        <div
-          className="modal-overlay"
-          onClick={() => setSelectedRecipe(null)}
-        >
-          <div
-            className="modal-content"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              className="close-btn"
-              onClick={() => setSelectedRecipe(null)}
-            >
+        <div className="modal-overlay" onClick={() => setSelectedRecipe(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="close-btn" onClick={() => setSelectedRecipe(null)}>
               ✖
             </button>
 
             <img
-              src={selectedRecipe.ATT_FILE_NO_MAIN}
-              alt={selectedRecipe.RCP_NM}
+              src={selectedRecipe.image || "/no-image.png"}
+              alt={selectedRecipe.title}
             />
-            <h2>{selectedRecipe.RCP_NM}</h2>
-            <p>{selectedRecipe.RCP_PARTS_DTLS}</p>
+            <h2>{selectedRecipe.title}</h2>
+            <p>{selectedRecipe.ingredients}</p>
 
             <div className="modal-buttons">
               <button
                 className="detail-btn"
                 onClick={() =>
-                  navigate(`/recipe/${selectedRecipe.RCP_SEQ}`, {
+                  navigate(`/recipe/${selectedRecipe.id}`, {
                     state: { recipe: selectedRecipe },
                   })
                 }
@@ -90,7 +85,7 @@ export default function FavoritePage() {
               <button
                 className="favorite-remove-btn"
                 onClick={() => {
-                  removeFavorite(selectedRecipe.RCP_SEQ);
+                  removeFavorite(selectedRecipe.id);
                   setSelectedRecipe(null);
                 }}
               >

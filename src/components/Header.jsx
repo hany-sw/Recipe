@@ -11,6 +11,12 @@ export default function Header() {
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
+  // ✅ 페이지 이동 시 자동으로 메뉴 닫기
+  const handleNavigate = (path) => {
+    navigate(path);
+    setMenuOpen(false);
+  };
+
   return (
     <>
       <header className="app-header">
@@ -18,7 +24,7 @@ export default function Header() {
           ⬅
         </button>
 
-        <h1 className="header-title" onClick={() => navigate("/")}>
+        <h1 className="header-title" onClick={() => handleNavigate("/")}>
           🍳 냉장고 레시피
         </h1>
 
@@ -28,12 +34,15 @@ export default function Header() {
 
         {menuOpen && (
           <div className="menu-dropdown">
-            <button onClick={() => navigate("/mypage")}>마이페이지</button>
-                <button onClick={() => navigate("/recipe-upload")}>레시피 등록</button>
-                <button onClick={() => navigate("/favorite")}>즐겨찾기</button>
-                <button onClick={() => navigate("/community")}>자유게시판</button>
-          <button onClick={() => alert("로그아웃 기능은 준비 중입니다.")}>
-            🚪 로그아웃
+            <button onClick={() => handleNavigate("/mypage")}>마이페이지</button>
+            <button onClick={() => handleNavigate("/recipe-upload")}>레시피 등록</button>
+            <button onClick={() => handleNavigate("/favorite")}>즐겨찾기</button>
+            <button onClick={() => handleNavigate("/community")}>자유게시판</button>
+            <button onClick={() => {
+              alert("로그아웃 기능은 준비 중입니다.");
+              setMenuOpen(false); // ✅ 로그아웃 클릭 후 메뉴 닫기
+            }}>
+              🚪 로그아웃
             </button>
           </div>
         )}

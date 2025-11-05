@@ -17,11 +17,11 @@ export default function MyPage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const data = await getProfile();
-        setProfile(data);
+        const res = await getProfile();
+        setProfile(res.data);
         setFormData({
-          username: data.username,
-          email: data.email,
+          username: res.data.username,
+          email: res.data.email,
           password: "",
         });
       } catch (err) {
