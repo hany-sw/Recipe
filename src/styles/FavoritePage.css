@@ -1,0 +1,197 @@
+.favorite-page {
+  max-width: 900px;
+  margin: 60px auto;
+  text-align: center;
+  font-family: "Pretendard", sans-serif;
+}
+
+/* 제목 크기 줄이기 */
+.favorite-page h1 {
+  font-size: 20px; /* ✅ 글씨 크기 줄임 */
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 25px;
+}
+
+/* 카드 리스트 */
+.favorite-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 18px;
+}
+
+/* 개별 카드 */
+.favorite-card {
+  background: #fffdf8;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  width: 200px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s;
+  position: relative;
+}
+
+.favorite-card:hover {
+  transform: scale(1.04);
+}
+
+.favorite-card img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 12px 12px 0 0;
+}
+
+/* 카드 내부 정보 */
+.favorite-info {
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.favorite-info h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+/* 삭제 버튼 */
+.remove-btn {
+  background: #ff5555;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.remove-btn:hover {
+  background: #e63946;
+}
+
+/* 빈 상태 */
+.empty {
+  color: #888;
+  margin-top: 50px;
+  font-size: 15px;
+}
+
+/* ✅ 모달 공통 */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 420px;
+  padding: 25px;
+  text-align: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-content img {
+  width: 100%;
+  height: 200px;
+  border-radius: 10px;
+  object-fit: cover;
+  margin-bottom: 15px;
+}
+
+.modal-content h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ff8b3d;
+  margin-bottom: 8px;
+}
+
+.modal-content p {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.4;
+  margin-bottom: 15px;
+}
+
+/* 모달 버튼 영역 */
+.modal-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.detail-btn,
+.favorite-remove-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+/* 상세 보기 버튼 */
+.detail-btn {
+  background: #ff8b3d;
+  color: white;
+}
+
+.detail-btn:hover {
+  background: #ff6a00;
+}
+
+/* 즐겨찾기 해제 버튼 */
+.favorite-remove-btn {
+  background: #ddd;
+  color: #333;
+}
+
+.favorite-remove-btn:hover {
+  background: #ccc;
+}
+
+/* 닫기 버튼 */
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* 모바일 */
+@media screen and (max-width: 480px) {
+  .favorite-card {
+    width: 150px;
+  }
+
+  .favorite-card img {
+    height: 110px;
+  }
+
+  .favorite-info h3 {
+    font-size: 13px;
+  }
+
+  .favorite-page h1 {
+    font-size: 18px;
+  }
+}

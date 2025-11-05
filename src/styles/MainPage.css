@@ -1,0 +1,165 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.main-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  background-color: #fff;
+}
+
+.site-header {
+  width: 100%;
+  background-color: #fff4e6;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 16px 0;
+  text-align: center;
+  position: relative;
+}
+
+.logo {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #333;
+  margin: 0;
+}
+
+.menu-icon {
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+  font-size: 1.8rem;
+  color: #ff5533;
+  cursor: pointer;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 70px;
+  right: 20px;
+  background-color: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  gap: 8px;
+}
+
+.dropdown-menu button {
+  background: transparent;
+  border: none;
+  padding: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dropdown-menu button:hover {
+  background-color: #ff8b3d;
+  color: white;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 30px 0;
+  box-sizing: border-box;
+}
+
+.top10-box {
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 24px 20px;
+  width: 90%;
+  max-width: 420px;
+  text-align: center;
+}
+
+.top10-box h2 {
+  margin-bottom: 16px;
+  color: #333;
+  font-size: 1.3rem;
+}
+
+.search-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 30px;
+  margin-bottom: 40px;
+}
+
+.search-box input {
+  width: 90%;             
+  max-width: 460px;        
+  padding: 12px 18px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 16px;
+  outline: none;
+  transition: 0.3s;
+}
+
+.search-box input:focus {
+  border-color: #ff8b3d;
+  box-shadow: 0 0 6px rgba(255, 139, 61, 0.3);
+}
+
+
+.search-box button {
+  padding: 8px 12px;       
+  border: none;
+  border-radius: 8px;
+  background-color: #ff8b3d;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+  font-size: 14px;          
+}
+
+.search-box button:hover {
+  background-color: #ff6a00;
+}
+/* ===== 검색 안내문 + 검색창 ===== */
+.search-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: 25px;
+  margin-bottom: 35px;
+}
+
+/* 🥕 안내 문구 */
+.search-guide {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ff8b3d;
+  margin-bottom: 14px;
+}
+/* 🔥 상단 흰색 여백 제거 */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #fff8ee; /* 페이지 배경색 유지 */
+}
+
+/* 🔥 메인 컨텐츠가 위로 붙게 */
+.main-page {
+  margin-top: 0;
+  padding-top: 0;
+}

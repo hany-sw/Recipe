@@ -1,0 +1,208 @@
+* {
+  box-sizing: border-box;
+}
+
+.mypage-container {
+  max-width: 600px;
+  margin: 70px auto;
+  text-align: center;
+  font-family: "Pretendard", sans-serif;
+}
+
+/* 🧍 프로필 카드 */
+.profile-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ✏️ 프로필 수정 버튼 (오른쪽 상단) */
+.edit-top-right {
+  position: absolute;
+  top: 15px;
+  right: 18px;
+  color: #ff8b3d;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: 0.2s;
+}
+
+.edit-top-right:hover {
+  transform: scale(1.05);
+}
+
+/* 왼쪽: 프로필 이미지 */
+.profile-img-wrapper {
+  position: relative;
+  cursor: pointer;
+}
+
+.profile-img {
+  width: 180px; /* ✅ 큰 사이즈 */
+  height: 180px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #000000; /* ✅ 아주 얇은 검정 테두리 */
+  transition: 0.2s;
+}
+
+.profile-img:hover {
+  transform: scale(1.02);
+}
+
+/* 사진 메뉴 팝업 */
+.photo-menu {
+  position: absolute;
+  top: 190px; /* 이미지 바로 아래 */
+  left: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  width: 140px;
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+  animation: fadeIn 0.2s ease;
+}
+
+.photo-menu button {
+  background: none;
+  border: none;
+  padding: 10px;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+  color: #333;
+}
+
+.photo-menu button:hover {
+  background: #fff4e5;
+  color: #ff8b3d;
+}
+
+/* 오른쪽: 이름/이메일 */
+.profile-right {
+  margin-left: 30px;
+  text-align: left;
+}
+
+.profile-right p {
+  margin: 10px 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.profile-right b {
+  color: #ff8b3d;
+}
+
+/* 로그아웃 버튼 */
+.logout-section {
+  margin-top: 40px;
+}
+
+.logout-section button {
+  background: #444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: 0.2s;
+}
+
+.logout-section button:hover {
+  background: #222;
+}
+
+/* 수정 모달 */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  width: 320px;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-content h3 {
+  color: #ff8b3d;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.modal-content input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.save-btn {
+  background: #ff8b3d;
+  border: none;
+  color: white;
+  padding: 10px;
+  border-radius: 6px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.save-btn:hover {
+  background: #ff7a1c;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* 📱 모바일 대응 */
+@media screen and (max-width: 480px) {
+  .profile-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-right {
+    margin-left: 0;
+    margin-top: 15px;
+  }
+
+  .profile-img {
+    width: 150px;
+    height: 150px;
+  }
+
+  .photo-menu {
+    top: 160px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .edit-top-right {
+    top: 10px;
+    right: 12px;
+    font-size: 15px;
+  }
+}

@@ -1,0 +1,168 @@
+import { useState, useEffect } from "react";
+import { getProfile, updateProfile, logout } from "../api/api";
+import "../styles/MyPage.css";
+
+export default function MyPage() {
+  const [profile, setProfile] = useState(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [photoMenuOpen, setPhotoMenuOpen] = useState(false);
+  const [preview, setPreview] = useState(null);
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
+
+  // ✅ 프로필 불러오기
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const data = await getProfile();
+        setProfile(data);
+        setFormData({
+          username: data.username,
+          email: data.email,
+          password: "",
+        });
+      } catch (err) {
+        console.error(err);
+        alert("프로필을 불러오지 못했습니다.");
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  // ✅ 프로필 사진 변경
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) setPreview(URL.createObjectURL(file));
+  };
+
+  // ✅ 프로필 수정 완료
+  const handleSaveChanges = async () => {
+    try {
+      await updateProfile(formData);
+      alert("프로필이 수정되었습니다!");
+      setEditModalOpen(false);
+      setProfile({ ...profile, ...formData });
+    } catch (err) {
+      alert("수정 실패: " + (err.response?.data || err.message));
+    }
+  };
+
+  // ✅ 로그아웃
+  const handleLogout = async () => {
+    await logout();
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    alert("로그아웃되었습니다.");
+    window.location.href = "/login";
+  };
+
+  if (!profile)
+    return <p style={{ textAlign: "center" }}>프로필 불러오는 중...</p>;
+
+  return (
+    <div className="mypage-container">
+      {/* 상단 프로필 카드 */}
+      <section className="profile-card">
+        {/* 오른쪽 상단 프로필 수정 버튼 */}
+        <div className="edit-top-right" onClick={() => setEditModalOpen(true)}>
+          ✏️ <span>프로필 수정</span>
+        </div>
+
+        <div className="profile-left">
+          {/* 프로필 이미지 */}
+          <div
+            className="profile-img-wrapper"
+            onClick={() => setPhotoMenuOpen(!photoMenuOpen)}
+          >
+            <img
+              src={preview || profile.profileImage || "/default.png"}
+              alt="프로필"
+              className="profile-img"
+            />
+          </div>
+
+          {/* 사진 메뉴 팝업 */}
+          {photoMenuOpen && (
+            <div className="photo-menu">
+              <button
+                onClick={() =>
+                  window.open(preview || profile.profileImage || "/default.png")
+                }
+              >
+                사진 크게 보기
+              </button>
+              <button
+                onClick={() => {
+                  document.getElementById("profileImage").click();
+                  setPhotoMenuOpen(false);
+                }}
+              >
+                사진 수정
+              </button>
+            </div>
+          )}
+
+          <input
+            id="profileImage"
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            style={{ display: "none" }}
+          />
+        </div>
+
+        <div className="profile-right">
+          <p><b>이름:</b> {profile.username}</p>
+          <p><b>이메일:</b> {profile.email}</p>
+        </div>
+      </section>
+
+      {/* 로그아웃 버튼 */}
+      <div className="logout-section">
+        <button onClick={handleLogout}>로그아웃</button>
+      </div>
+
+      {/* 수정 모달 */}
+      {editModalOpen && (
+        <div className="modal-overlay" onClick={() => setEditModalOpen(false)}>
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3>프로필 수정</h3>
+            <input
+              type="text"
+              placeholder="이름"
+              value={formData.username}
+              onChange={(e) =>
+                setFormData({ ...formData, username: e.target.value })
+              }
+            />
+            <input
+              type="email"
+              placeholder="이메일"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+            />
+            <input
+              type="password"
+              placeholder="비밀번호 변경 (선택)"
+              value={formData.password}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
+            />
+            <button className="save-btn" onClick={handleSaveChanges}>
+              수정 완료
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

@@ -1,0 +1,240 @@
+/* =============== 전체 페이지 기본 =============== */
+.search-result-page {
+  background-color: #fffaf3; /* 아이보리톤 */
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+
+/* =============== 상단 검색바 =============== */
+.search-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  border-bottom: 2px solid #ffe0b2;
+}
+
+.logo {
+  font-size: 26px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.search-box input {
+  width: 260px;
+  height: 38px;
+  padding: 0 12px;
+  border: 2px solid #ffb84d;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+  transition: 0.2s;
+}
+
+.search-box input:focus {
+  border-color: #ff8b3d;
+  box-shadow: 0 0 4px rgba(255, 139, 61, 0.4);
+}
+
+.search-box button {
+  height: 38px;
+  padding: 0 16px;
+  background-color: #ff8b3d;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.search-box button:hover {
+  background-color: #ff9c5a;
+}
+
+/* =============== 결과 제목 =============== */
+.search-result {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.search-result h2 {
+  font-size: 22px;
+  margin-bottom: 20px;
+  color: #333;
+  font-weight: 700;
+}
+
+/* =============== 레시피 카드 =============== */
+.recipe-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+.recipe-card {
+  width: 220px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  text-align: center;
+  padding: 12px;
+  transition: all 0.2s ease-in-out;
+}
+
+.recipe-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+.recipe-card img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.recipe-card h3 {
+  margin-top: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+}
+
+/* =============== 모달창 =============== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  position: relative;
+  animation: scaleUp 0.25s ease;
+}
+
+.modal-content img {
+  width: 100%;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.modal-content h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.modal-content p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #555;
+  text-align: left;
+}
+
+.close-btn {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #777;
+}
+
+.close-btn:hover {
+  color: #ff8b3d;
+}
+
+/* =============== 애니메이션 =============== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleUp {
+  from {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+/* 버튼 묶음 정렬 */
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px; /* ✅ 버튼 사이 여백 */
+  margin-top: 20px;
+}
+
+/* 상세보기 버튼 */
+.detail-btn {
+  background-color: #ff8b3d;
+  color: white;
+  font-weight: bold;
+  border: none;
+  padding: 8px 16px; /* ✅ 크기 약간 축소 */
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+  font-size: 14px;
+}
+
+.detail-btn:hover {
+  background-color: #ff6a00;
+}
+
+/* 즐겨찾기 버튼 */
+.favorite-btn {
+  background-color: #ffb84d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.favorite-btn:hover {
+  background-color: #ff9c5a;
+}
+
+.favorite-btn.active {
+  background-color: #ff4d4d;
+}

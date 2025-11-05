@@ -1,0 +1,73 @@
+/* 페이지 전체를 화면 정중앙에 배치 */
+.signup-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;  /* 세로 중앙 */
+  align-items: center;      /* 가로 중앙 */
+  text-align: center;
+  min-height: 100vh;        /* 화면 전체 기준 */
+  background-color: #fff;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+/* ✅ 제목을 냉장고 레시피 스타일로 */
+.signup-title {
+  background-color: #fff4e6; /* 주황빛 배경 */
+  color: #2c2c2c;
+  font-size: 1.8rem;
+  font-weight: 800;
+  padding: 10px 24px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  display: inline-block;
+  margin-bottom: 30px;
+}
+
+/* 입력 폼 */
+.signup-form {
+  width: 100%;
+  max-width: 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.signup-form input {
+  width: 100%;
+  padding: 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+/* 버튼 */
+.signup-btn {
+  margin-top: 10px;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background-color: #ff8b3d;
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.signup-btn:hover {
+  background-color: #ff6f00;
+}
+
+/* 로그인으로 이동 */
+.to-login {
+  margin-top: 20px;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.to-login span {
+  color: #ff8b3d;
+  font-weight: 600;
+  cursor: pointer;
+}
