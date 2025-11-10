@@ -1,6 +1,7 @@
 import { useLocation } from "react-router-dom";
 import "../styles/RecipeDetail.css";
 
+
 export default function RecipeDetail() {
   const location = useLocation();
   const recipe = location.state?.recipe;

@@ -4,6 +4,7 @@ import { getProfile, logout } from "../api/api"; // ✅ API 연결
 import Top10List from "../components/Top10List";
 import "../styles/MainPage.css";
 
+
 export default function MainPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [userName, setUserName] = useState("");

@@ -74,4 +74,11 @@ export const updateBoard = (boardId, title, content) =>
 export const deleteBoard = (boardId) =>
   instance.delete(`/board/${boardId}`);
 
+// ✅ 즐겨찾기 관련 API
+export const getFavorites = () => instance.get("/favorites/my");
+export const addFavorite = (recipeId) =>
+  instance.post("/favorites", { recipeId });
+export const removeFavorite = (recipeId) =>
+  instance.delete(`/favorites/${recipeId}`);
+
 export default instance;

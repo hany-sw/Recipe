@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { getProfile, updateProfile, logout } from "../api/api";
 import "../styles/MyPage.css";
 
+
 export default function MyPage() {
   const [profile, setProfile] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
