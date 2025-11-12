@@ -5,6 +5,7 @@ import Top10List from "../components/Top10List";
 import "../styles/MainPage.css";
 
 
+
 export default function MainPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [userName, setUserName] = useState("");
@@ -34,7 +35,8 @@ export default function MainPage() {
       localStorage.removeItem("refreshToken");
       setUserName("");
       alert("로그아웃되었습니다.");
-      navigate("/login");
+      navigate("/login", { replace: true });
+      window.location.reload()
     } catch (err) {
       alert(err.response?.data || err.message);
     }

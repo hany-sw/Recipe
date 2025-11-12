@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getFavorites, addFavorite, removeFavorite } from "../api/api"; // ✅ 통합 호출
+import axios from "axios";
+import { getFavorites, addFavorite, removeFavorite } from "../api/api";
 import "../styles/SearchResult.css";
 
 export default function SearchResult() {
@@ -9,13 +10,14 @@ export default function SearchResult() {
   const params = new URLSearchParams(location.search);
   const ingredient = params.get("ingredient");
 
+  const BASE_URL = "http://210.110.33.220:8183/api";
+
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState(ingredient || "");
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [favorites, setFavorites] = useState([]);
-
-  const RECIPE_KEY = import.meta.env.VITE_RECIPE_API_KEY;
+  const [isAIMode, setIsAIMode] = useState(false);
 
   // ✅ 초기 즐겨찾기 불러오기
   useEffect(() => {
@@ -30,64 +32,102 @@ export default function SearchResult() {
     loadFavorites();
   }, []);
 
-  // ✅ 공공데이터 레시피 불러오기
+  // ✅ 검색
   const fetchRecipes = async (keyword) => {
     if (!keyword) return;
     setLoading(true);
+
     try {
-      const url = `https://openapi.foodsafetykorea.go.kr/api/${RECIPE_KEY}/COOKRCP01/json/1/30/RCP_PARTS_DTLS=${encodeURIComponent(
-        keyword
-      )}`;
-      const response = await fetch(url);
-      const json = await response.json();
-      const data = json?.COOKRCP01?.row;
-      setRecipes(data || []);
+      let res;
+      if (isAIMode) {
+        res = await axios.get(`${BASE_URL}/recipes/recommend/ai`, {
+          params: { ingredients: keyword },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        });
+
+        const aiResults = res.data?.recommendations || [];
+        const detailPromises = aiResults.map(async (foodName) => {
+          try {
+            const detail = await axios.get(
+              `${BASE_URL}/recipes/recommend/ai/detail`,
+              { params: { foodName } }
+            );
+            return detail.data;
+          } catch (e) {
+            console.error("AI 상세 요청 실패:", e);
+            return null;
+          }
+        });
+        const details = await Promise.all(detailPromises);
+        setRecipes(details.filter((r) => r !== null));
+      } else {
+        res = await axios.get(`${BASE_URL}/recipes/search`, {
+          params: { ingredients: keyword },
+        });
+        setRecipes(res.data || []);
+      }
     } catch (error) {
-      console.error("API 호출 오류:", error);
+      console.error("검색 오류:", error);
+      alert("검색 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ URL 파라미터 기반 검색
   useEffect(() => {
     if (ingredient) fetchRecipes(ingredient);
-  }, [ingredient]);
+  }, [ingredient, isAIMode]);
 
-  // ✅ 검색 버튼
   const handleSearch = () => {
     if (!query.trim()) return alert("재료를 입력해주세요!");
     navigate(`/search?ingredient=${encodeURIComponent(query)}`);
     fetchRecipes(query);
   };
 
-  // ✅ 즐겨찾기 토글
   const toggleFavorite = async (recipe) => {
+    const recipeId =
+      recipe.recipeId || recipe.userRecipeId || recipe.RCP_SEQ || null;
+    if (!recipeId) return alert("즐겨찾기 불가능한 레시피입니다.");
+
     const alreadyFavorite = favorites.some(
-      (f) => f.recipeId === parseInt(recipe.RCP_SEQ)
+      (f) => f.recipeId === parseInt(recipeId)
     );
 
     try {
       if (alreadyFavorite) {
-        await removeFavorite(recipe.RCP_SEQ);
-        setFavorites(favorites.filter((f) => f.recipeId !== parseInt(recipe.RCP_SEQ)));
-        alert("즐겨찾기에서 삭제되었습니다!");
+        await removeFavorite(recipeId);
+        setFavorites(favorites.filter((f) => f.recipeId !== parseInt(recipeId)));
       } else {
-        await addFavorite(recipe.RCP_SEQ);
-        setFavorites([...favorites, { recipeId: parseInt(recipe.RCP_SEQ) }]);
-        alert("즐겨찾기에 추가되었습니다!");
+        await addFavorite(recipeId);
+        setFavorites([...favorites, { recipeId: parseInt(recipeId) }]);
       }
     } catch (err) {
-      console.error("즐겨찾기 요청 실패:", err);
-      alert("서버 요청 중 오류가 발생했습니다.");
+      console.error("즐겨찾기 오류:", err);
     }
   };
 
-  const isFavorite = (recipe) =>
-    favorites.some((f) => f.recipeId === parseInt(recipe.RCP_SEQ));
+  const isFavorite = (recipe) => {
+    const recipeId =
+      recipe.recipeId || recipe.userRecipeId || recipe.RCP_SEQ || null;
+    return favorites.some((f) => f.recipeId === parseInt(recipeId));
+  };
+
+  // ✅ 상세 정보 불러오기 (모달 클릭 시 즉시 API 요청)
+  const fetchRecipeDetail = async (recipeId) => {
+    try {
+      const res = await axios.get(`${BASE_URL}/recipes/${recipeId}`);
+      setSelectedRecipe(res.data);
+    } catch (err) {
+      console.error("상세 레시피 불러오기 실패:", err);
+      alert("레시피 정보를 불러올 수 없습니다.");
+    }
+  };
 
   return (
     <div className="search-result-page">
+      {/* 검색바 */}
       <div className="search-bar">
         <div className="search-box">
           <input
@@ -104,31 +144,50 @@ export default function SearchResult() {
           />
           <button onClick={handleSearch}>검색</button>
         </div>
+
+        <div className="ai-toggle">
+          <label>
+            <input
+              type="checkbox"
+              checked={isAIMode}
+              onChange={() => setIsAIMode(!isAIMode)}
+            />
+            🤖 AI 모드
+          </label>
+        </div>
       </div>
 
-      {/* 🔥 검색 결과 */}
+      {/* 결과 */}
       <div className="search-result">
-        <h2>🔍 "{ingredient}" 관련 레시피</h2>
+        <h2>
+          {isAIMode
+            ? `🤖 AI 추천 결과 (${query})`
+            : `🔍 "${ingredient}" 관련 레시피`}
+        </h2>
         {loading ? (
           <p>불러오는 중...</p>
         ) : (
           <div className="recipe-list">
             {recipes.length > 0 ? (
-              recipes.map((item) => (
+              recipes.map((item, idx) => (
                 <div
-                  key={item.RCP_SEQ}
+                  key={item.recipeId || item.RCP_SEQ || idx}
                   className="recipe-card"
-                  onClick={() => setSelectedRecipe(item)}
+                  onClick={() =>
+                    item.recipeId
+                      ? fetchRecipeDetail(item.recipeId)
+                      : setSelectedRecipe(item)
+                  }
                 >
                   <img
                     src={
-                      item.ATT_FILE_NO_MAIN && item.ATT_FILE_NO_MAIN.trim() !== ""
-                        ? item.ATT_FILE_NO_MAIN
-                        : "https://via.placeholder.com/200x150?text=No+Image"
+                      item.imageUrl ||
+                      item.ATT_FILE_NO_MAIN ||
+                      "https://via.placeholder.com/200x150?text=No+Image"
                     }
-                    alt={item.RCP_NM || "레시피 이미지"}
+                    alt={item.title || item.RCP_NM || "레시피 이미지"}
                   />
-                  <h3>{item.RCP_NM || "이름 없는 레시피"}</h3>
+                  <h3>{item.title || item.RCP_NM || item.name}</h3>
                 </div>
               ))
             ) : (
@@ -138,38 +197,29 @@ export default function SearchResult() {
         )}
       </div>
 
-      {/* 🧾 모달 */}
+      {/* 상세 모달 */}
       {selectedRecipe && (
         <div className="modal-overlay" onClick={() => setSelectedRecipe(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button className="close-btn" onClick={() => setSelectedRecipe(null)}>
               ✖
             </button>
-
             <img
               src={
-                selectedRecipe.ATT_FILE_NO_MAIN &&
-                selectedRecipe.ATT_FILE_NO_MAIN.trim() !== ""
-                  ? selectedRecipe.ATT_FILE_NO_MAIN
-                  : "https://via.placeholder.com/200x150?text=No+Image"
+                selectedRecipe.imageUrl ||
+                selectedRecipe.ATT_FILE_NO_MAIN ||
+                "https://via.placeholder.com/200x150?text=No+Image"
               }
-              alt={selectedRecipe.RCP_NM}
+              alt={selectedRecipe.title || selectedRecipe.RCP_NM}
             />
-            <h2>{selectedRecipe.RCP_NM}</h2>
-            <p>{selectedRecipe.RCP_PARTS_DTLS}</p>
+            <h2>{selectedRecipe.title || selectedRecipe.RCP_NM}</h2>
+            <p>
+              {selectedRecipe.ingredients ||
+                selectedRecipe.RCP_PARTS_DTLS ||
+                "재료 정보 없음"}
+            </p>
 
             <div className="modal-buttons">
-              <button
-                className="detail-btn"
-                onClick={() => {
-                  navigate(`/recipe/${selectedRecipe.RCP_SEQ}`, {
-                    state: { recipe: selectedRecipe },
-                  });
-                }}
-              >
-                🔍 상세 레시피 보기
-              </button>
-
               <button
                 className={`favorite-btn ${
                   isFavorite(selectedRecipe) ? "active" : ""
@@ -180,6 +230,26 @@ export default function SearchResult() {
                   ? "❤️ 즐겨찾기 해제"
                   : "🤍 즐겨찾기 추가"}
               </button>
+              <button
+  className="detail-btn"
+  onClick={() => {
+    // ✅ title만 넘기기
+    const title =
+      selectedRecipe.RCP_NM ||
+      selectedRecipe.name ||
+      selectedRecipe.baseRecipeName;
+
+      console.log("✅ 전달할 title:", title); // ← 꼭 확인
+    if (!title) {
+      alert("레시피 제목을 찾을 수 없습니다!");
+      return;
+    }
+
+    navigate(`/recipe/details`, { state: { title } });
+  }}
+>
+  🔍 상세 레시피 보기
+</button>
             </div>
           </div>
         </div>

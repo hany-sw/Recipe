@@ -251,3 +251,31 @@
     opacity: 1;
   }
 }
+.modal-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.favorite-btn,
+.detail-btn {
+  background-color: #ffa94d;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: 0.2s;
+}
+
+.favorite-btn:hover,
+.detail-btn:hover {
+  background-color: #ff8c00;
+}
+
+.favorite-btn.active {
+  background-color: #ff4d6d;
+}

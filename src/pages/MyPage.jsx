@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { getProfile, updateProfile, logout } from "../api/api";
 import "../styles/MyPage.css";
+// import { ToastContainer, toast } from "react-toastify";
+// import "react-toastify/dist/ReactToastify.css";
+
+
 
 
 export default function MyPage() {

@@ -17,6 +17,23 @@ export default function Header() {
     setMenuOpen(false);
   };
 
+  // ✅ 로그아웃 기능
+  const handleLogout = () => {
+    if (window.confirm("정말 로그아웃 하시겠습니까?")) {
+      // 1️⃣ 토큰 삭제
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user"); // 혹시 사용자 정보 저장했으면 같이 삭제
+
+      // 2️⃣ 알림
+      alert("로그아웃 되었습니다.");
+
+      // 3️⃣ 메뉴 닫기 및 메인으로 이동
+      setMenuOpen(false);
+      navigate("/");
+    }
+  };
+
   return (
     <>
       <header className="app-header">
@@ -38,12 +55,9 @@ export default function Header() {
             <button onClick={() => handleNavigate("/recipe-upload")}>레시피 등록</button>
             <button onClick={() => handleNavigate("/favorite")}>즐겨찾기</button>
             <button onClick={() => handleNavigate("/community")}>자유게시판</button>
-            <button onClick={() => {
-              alert("로그아웃 기능은 준비 중입니다.");
-              setMenuOpen(false); // ✅ 로그아웃 클릭 후 메뉴 닫기
-            }}>
-              🚪 로그아웃
-            </button>
+
+            {/* ✅ 실제 로그아웃 기능 적용 */}
+            <button onClick={handleLogout}>🚪 로그아웃</button>
           </div>
         )}
       </header>

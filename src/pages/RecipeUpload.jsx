@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { getProfile } from "../api/api";
-import instance from "../api/api"; // ✅ api.js의 instance 사용
+import instance from "../api/api"; 
 import "../styles/RecipeUpload.css";
-
 
 export default function RecipeUpload() {
   const [user, setUser] = useState(null);
@@ -10,9 +9,11 @@ export default function RecipeUpload() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [recipe, setRecipe] = useState({
-    title: "",
+    name: "",
     description: "",
     imageUrl: "",
+    ingredients: "",
+    baseRecipeName: "",
   });
   const [myRecipes, setMyRecipes] = useState([]);
 
@@ -34,7 +35,11 @@ export default function RecipeUpload() {
   const loadUserRecipes = async () => {
     if (!user) return;
     try {
-      const res = await instance.get(`/recipes/my`);
+      const res = await instance.get(`/recipes/my`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
       setMyRecipes(res.data);
     } catch (err) {
       console.error("레시피 불러오기 실패:", err);
@@ -49,35 +54,35 @@ export default function RecipeUpload() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!recipe.title.trim() || !recipe.description.trim()) {
-      alert("제목과 설명을 입력해주세요!");
+    if (!recipe.name.trim() || !recipe.description.trim()) {
+      alert("이름과 설명을 입력해주세요!");
       return;
     }
 
-    // ✅ 등록과 수정 시 payload를 다르게 구성
     const payload = {
-      title: recipe.title.trim(),
+      name: recipe.name.trim(),
       description: recipe.description.trim(),
+      imageUrl: recipe.imageUrl.trim() || null,
+      ingredients: recipe.ingredients.trim() || "",
+      baseRecipeName: recipe.baseRecipeName.trim() || "",
+      user: { userId: user?.userId || null },
     };
-
-    // ✅ imageUrl이 있을 때만 포함
-    if (recipe.imageUrl && recipe.imageUrl.trim()) {
-      payload.imageUrl = recipe.imageUrl.trim();
-    }
-
-    // ✅ 수정 시에만 recipeId 포함
-    if (isEditMode) {
-      payload.recipeId = editingId;
-    }
 
     try {
       if (isEditMode) {
-        // ✅ 수정
-        await instance.put(`/recipes/${editingId}`, payload);
+        await instance.put(`/recipes/${editingId}`, payload, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        });
         alert("레시피가 수정되었습니다!");
       } else {
-        // ✅ 등록
-        await instance.post("/recipes", payload);
+        // ✅ 변경된 백엔드 경로에 맞춰 수정
+        await instance.post(`/recipes/user`, payload, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        });
         alert("레시피가 등록되었습니다!");
       }
 
@@ -85,14 +90,7 @@ export default function RecipeUpload() {
       resetForm();
     } catch (err) {
       console.error("레시피 등록/수정 실패:", err);
-      
-      if (err.response) {
-        console.error("서버 응답:", err.response.data);
-        const message = err.response.data.message || "레시피 처리 중 오류가 발생했습니다.";
-        alert(`⚠️ ${message}`);
-      } else {
-        alert("서버 연결 실패");
-      }
+      alert("⚠️ 서버 오류: 레시피를 처리할 수 없습니다.");
     }
   };
 
@@ -100,11 +98,13 @@ export default function RecipeUpload() {
   const handleEdit = (r) => {
     setIsModalOpen(true);
     setIsEditMode(true);
-    setEditingId(r.recipeId);
+    setEditingId(r.userRecipeId);
     setRecipe({
-      title: r.title,
-      description: r.description,
+      name: r.name || "",
+      description: r.description || "",
       imageUrl: r.imageUrl || "",
+      ingredients: r.ingredients || "",
+      baseRecipeName: r.baseRecipeName || "",
     });
   };
 
@@ -112,7 +112,11 @@ export default function RecipeUpload() {
   const handleDelete = async (id) => {
     if (window.confirm("정말 삭제하시겠습니까?")) {
       try {
-        await instance.delete(`/recipes/${id}`);
+        await instance.delete(`/recipes/${id}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        });
         alert("삭제되었습니다!");
         loadUserRecipes();
       } catch (err) {
@@ -127,7 +131,13 @@ export default function RecipeUpload() {
     setIsModalOpen(false);
     setIsEditMode(false);
     setEditingId(null);
-    setRecipe({ title: "", description: "", imageUrl: "" });
+    setRecipe({
+      name: "",
+      description: "",
+      imageUrl: "",
+      ingredients: "",
+      baseRecipeName: "",
+    });
   };
 
   return (
@@ -149,11 +159,11 @@ export default function RecipeUpload() {
             <h2>{isEditMode ? "레시피 수정" : "나만의 레시피 등록"}</h2>
 
             <form className="upload-form" onSubmit={handleSubmit}>
-              <label>레시피 제목</label>
+              <label>레시피 이름</label>
               <input
                 type="text"
-                value={recipe.title}
-                onChange={(e) => setRecipe({ ...recipe, title: e.target.value })}
+                value={recipe.name}
+                onChange={(e) => setRecipe({ ...recipe, name: e.target.value })}
                 required
               />
 
@@ -166,13 +176,33 @@ export default function RecipeUpload() {
                 required
               />
 
-              <label>이미지 URL (선택)</label>
+              <label>이미지 URL</label>
               <input
                 type="text"
                 placeholder="예: https://example.com/image.jpg"
                 value={recipe.imageUrl}
                 onChange={(e) =>
                   setRecipe({ ...recipe, imageUrl: e.target.value })
+                }
+              />
+
+              <label>재료 (선택)</label>
+              <input
+                type="text"
+                placeholder="예: 달걀, 밀가루, 설탕"
+                value={recipe.ingredients}
+                onChange={(e) =>
+                  setRecipe({ ...recipe, ingredients: e.target.value })
+                }
+              />
+
+              <label>기본 레시피 이름 (선택)</label>
+              <input
+                type="text"
+                placeholder="예: 기본 김치찌개"
+                value={recipe.baseRecipeName}
+                onChange={(e) =>
+                  setRecipe({ ...recipe, baseRecipeName: e.target.value })
                 }
               />
 
@@ -187,23 +217,21 @@ export default function RecipeUpload() {
       {/* 등록된 레시피 목록 */}
       <div className="my-recipe-list">
         {myRecipes.length === 0 ? (
-          <p className="empty">등록된 레시피가 없습니다 </p>
+          <p className="empty">등록된 레시피가 없습니다</p>
         ) : (
           <div className="recipe-grid">
             {myRecipes.map((r) => (
-              <div key={r.recipeId} className="recipe-card">
-                {r.imageUrl && <img src={r.imageUrl} alt={r.title} />}
-                <h3>{r.title}</h3>
+              <div key={r.userRecipeId} className="recipe-card">
+                {r.imageUrl && <img src={r.imageUrl} alt={r.name} />}
+                <h3>{r.name}</h3>
                 <p>{r.description.slice(0, 50)}...</p>
-                <p className="created-by">👩‍🍳 {r.createdBy?.username || "작성자 없음"}</p>
-
                 <div className="edit-btns">
                   <button className="edit-btn" onClick={() => handleEdit(r)}>
                     ✏️ 수정
                   </button>
                   <button
                     className="delete-btn"
-                    onClick={() => handleDelete(r.recipeId)}
+                    onClick={() => handleDelete(r.userRecipeId)}
                   >
                     🗑 삭제
                   </button>

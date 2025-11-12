@@ -38,3 +38,115 @@ h3 {
   color: #ff8b3d;
   margin-top: 25px;
 }
+.ingredient-item {
+  margin-bottom: 10px;
+  font-size: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.shop-buttons {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.coupang-btn,
+.ssg-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  color: white;
+  transition: 0.2s ease;
+}
+
+.coupang-btn {
+  background-color: #0074e4;
+}
+
+.coupang-btn:hover {
+  background-color: #005ec0;
+}
+
+.ssg-btn {
+  background-color: #000;
+}
+
+.ssg-btn:hover {
+  background-color: #333;
+}
+/* ✅ 전체 페이지 영역 배경 고정 */
+.recipe-detail-page {
+  background-color: #fffaf3; /* 너가 쓰는 아이보리톤 */
+  min-height: 100vh; /* 화면보다 작을 때도 채워줌 */
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* ✅ 스크롤할 때 내용이 길어져도 배경 유지 */
+body, html {
+  background-color: #fffaf3; /* 페이지 전체 배경 통일 */
+}
+.ingredient-item {
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.ingredient-name {
+  font-weight: 500;
+  font-size: 15px;
+  display: inline-block;
+  transition: color 0.2s ease;
+}
+
+.ingredient-name:hover {
+  color: #ff8b3d;
+}
+
+.shop-buttons {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  animation: fadeIn 0.3s ease;
+}
+
+.coupang-btn,
+.ssg-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  color: white;
+  transition: 0.2s ease;
+}
+
+.coupang-btn {
+  background-color: #0074e4;
+}
+
+.coupang-btn:hover {
+  background-color: #005ec0;
+}
+
+.ssg-btn {
+  background-color: #000;
+}
+
+.ssg-btn:hover {
+  background-color: #333;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

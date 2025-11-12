@@ -1,24 +1,50 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { getFavorites, removeFavorite } from "../api/api";
 import "../styles/FavoritePage.css";
-
 
 export default function FavoritePage() {
   const [favorites, setFavorites] = useState([]);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const navigate = useNavigate();
 
-  // ✅ localStorage 불러오기
+  const BASE_URL = "http://210.110.33.220:8183/api";
+
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("favorites")) || [];
-    setFavorites(stored);
+    const fetchFavorites = async () => {
+      try {
+        const res = await getFavorites();
+        const data = res.data || [];
+
+        // ✅ recipeId별로 상세정보 추가 조회
+        const enriched = await Promise.all(
+          data.map(async (fav) => {
+            try {
+              const detail = await axios.get(`${BASE_URL}/recipes/${fav.recipeId}`);
+              return { ...fav, recipe: detail.data };
+            } catch {
+              return fav;
+            }
+          })
+        );
+
+        setFavorites(enriched);
+      } catch (err) {
+        console.error("즐겨찾기 불러오기 실패:", err);
+      }
+    };
+    fetchFavorites();
   }, []);
 
-  // ✅ 즐겨찾기 삭제
-  const removeFavorite = (id) => {
-    const updated = favorites.filter((f) => f.id !== id);
-    setFavorites(updated);
-    localStorage.setItem("favorites", JSON.stringify(updated));
+  const handleRemoveFavorite = async (recipeId) => {
+    try {
+      await removeFavorite(recipeId);
+      setFavorites((prev) => prev.filter((f) => f.recipeId !== recipeId));
+      alert("즐겨찾기에서 삭제되었습니다!");
+    } catch (err) {
+      console.error("삭제 실패:", err);
+    }
   };
 
   return (
@@ -26,38 +52,40 @@ export default function FavoritePage() {
       <h1>⭐ 즐겨찾기한 레시피</h1>
 
       {favorites.length === 0 ? (
-        <p className="empty">즐겨찾기한 레시피가 없습니다 </p>
+        <p className="empty">즐겨찾기한 레시피가 없습니다 😢</p>
       ) : (
         <div className="favorite-list">
-          {favorites.map((r) => (
-            <div
-              key={r.id}
-              className="favorite-card"
-              onClick={() => setSelectedRecipe(r)}
-            >
-              <img
-                src={r.image || "/no-image.png"} // ✅ 안전 처리
-                alt={r.title || "레시피 이미지"}
-              />
-              <div className="favorite-info">
-                <h3>{r.title || "제목 없음"}</h3>
-                <p className="author">👩‍🍳 {r.author}</p>
-                <button
-                  className="remove-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeFavorite(r.id);
-                  }}
-                >
-                  삭제
-                </button>
+          {favorites.map((f) => {
+            const recipe = f.recipe || {};
+            return (
+              <div
+                key={f.favoriteId}
+                className="favorite-card"
+                onClick={() => setSelectedRecipe(recipe)}
+              >
+                <img
+                  src={recipe.imageUrl || "/no-image.png"}
+                  alt={recipe.title || "레시피 이미지"}
+                />
+                <div className="favorite-info">
+                  <h3>{recipe.title || "제목 없음"}</h3>
+                  {/* <p>{recipe.ingredients || "재료 정보 없음"}</p> */}
+                  <button
+                    className="remove-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveFavorite(f.recipeId);
+                    }}
+                  >
+                    삭제
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
-      {/* 🧾 모달 (즐겨찾기 상세 보기) */}
       {selectedRecipe && (
         <div className="modal-overlay" onClick={() => setSelectedRecipe(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -66,7 +94,7 @@ export default function FavoritePage() {
             </button>
 
             <img
-              src={selectedRecipe.image || "/no-image.png"}
+              src={selectedRecipe.imageUrl || "/no-image.png"}
               alt={selectedRecipe.title}
             />
             <h2>{selectedRecipe.title}</h2>
@@ -76,7 +104,7 @@ export default function FavoritePage() {
               <button
                 className="detail-btn"
                 onClick={() =>
-                  navigate(`/recipe/${selectedRecipe.id}`, {
+                  navigate(`/recipe/${selectedRecipe.recipeId}`, {
                     state: { recipe: selectedRecipe },
                   })
                 }
@@ -86,7 +114,7 @@ export default function FavoritePage() {
               <button
                 className="favorite-remove-btn"
                 onClick={() => {
-                  removeFavorite(selectedRecipe.id);
+                  handleRemoveFavorite(selectedRecipe.recipeId);
                   setSelectedRecipe(null);
                 }}
               >

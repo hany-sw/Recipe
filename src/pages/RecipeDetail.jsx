@@ -1,75 +1,80 @@
-import { useLocation } from "react-router-dom";
-import "../styles/RecipeDetail.css";
 
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import axios from "axios";
+import "../styles/RecipeDetail.css";
 
 export default function RecipeDetail() {
   const location = useLocation();
-  const recipe = location.state?.recipe;
+  const title = location.state?.title;
 
-  if (!recipe) {
-    return <p>레시피 정보를 불러올 수 없습니다.</p>;
-  }
 
-  // ✅ 조리 단계 1~20 모두 수집 (공백도 유지)
-  const steps = [];
-  for (let i = 1; i <= 20; i++) {
-    const key = String(i).padStart(2, "0");
-    const text = recipe[`MANUAL${key}`];
-    const img = recipe[`MANUAL_IMG${key}`];
+  const [data, setData] = useState(null);
 
-    // ✅ 공공데이터 일부가 \r\n으로 끝남 → 정리
-    const cleanedText = text ? text.replace(/\s+/g, " ").trim() : "";
-    const cleanedImg = img ? img.trim() : "";
+  const BASE_URL = "http://210.110.33.220:8183/api";
 
-    // ✅ 내용이 완전히 없으면 생략, 마지막까지 모두 확인
-    if (cleanedText !== "" || cleanedImg !== "") {
-      steps.push({ text: cleanedText, img: cleanedImg });
-    }
-  }
+  useEffect(() => {
+    if (!title) return;
+    axios
+      .get(`${BASE_URL}/recipes/details/${encodeURIComponent(title)}`)
+      .then((res) => setData(res.data))
+      .catch((err) => console.error("레시피 상세 조회 실패:", err));
+  }, [title]);
+
+  if (!data) return <p>레시피 정보를 불러오는 중입니다...</p>;
+
+  const { publicRecipe, userRecipe } = data;
 
   return (
     <div className="recipe-detail-page">
-      <h1 className="recipe-title">{recipe.RCP_NM}</h1>
+      <h1 className="recipe-title">{title}</h1>
 
-      <div className="recipe-main">
-        <img
-          src={
-            recipe.ATT_FILE_NO_MAIN ||
-            "https://via.placeholder.com/300x200?text=No+Image"
-          }
-          alt={recipe.RCP_NM}
-          className="main-image"
-        />
-      </div>
+      {/* ✅ 공공데이터 레시피 */}
+      {publicRecipe && (
+        <div className="public-recipe">
+          <img
+            src={
+              publicRecipe.ATT_FILE_NO_MAIN ||
+              "https://via.placeholder.com/300x200?text=No+Image"
+            }
+            alt={publicRecipe.RCP_NM}
+            className="main-image"
+          />
+          <h2>🧂 재료</h2>
+          <p>{publicRecipe.RCP_PARTS_DTLS}</p>
 
-      <section className="ingredients">
-        <h2>🧂 재료</h2>
-        <p>{recipe.RCP_PARTS_DTLS || "재료 정보가 없습니다."}</p>
-      </section>
+          <h2>🍳 조리 과정</h2>
+          {[...Array(20)].map((_, i) => {
+            const step = publicRecipe[`MANUAL${String(i + 1).padStart(2, "0")}`];
+            const img = publicRecipe[`MANUAL_IMG${String(i + 1).padStart(2, "0")}`];
+            if (!step && !img) return null;
+            return (
+              <div key={i} className="step">
+                {img && <img src={img} alt={`step-${i + 1}`} />}
+                <p>{step}</p>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
-      <section className="steps">
-        <h2>🍳 조리 과정</h2>
-        {steps.length > 0 ? (
-          steps.map((step, idx) => (
-            <div key={idx} className="step">
-              {step.img && (
-                <img
-                  src={step.img}
-                  alt={`step-${idx + 1}`}
-                  className="step-image"
-                />
-              )}
-              <p>
-                {step.text !== ""
-                  ? step.text
-                  : `(${idx + 1}단계 설명 없음)`}
-              </p>
+      {/* ✅ 사용자 등록 레시피 */}
+      {userRecipe && userRecipe.length > 0 && (
+        <div className="user-recipes">
+          <h2>👩‍🍳 사용자 등록 레시피</h2>
+          {userRecipe.map((r) => (
+            <div key={r.userRecipeId} className="user-recipe-card">
+              <img
+                src={r.imageUrl || "https://via.placeholder.com/200x150?text=No+Image"}
+                alt={r.name}
+              />
+              <h3>{r.name}</h3>
+              <p>{r.description}</p>
+              <p>재료: {r.ingredients}</p>
             </div>
-          ))
-        ) : (
-          <p>조리 과정 정보가 없습니다 😢</p>
-        )}
-      </section>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

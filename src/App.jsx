@@ -22,8 +22,8 @@ function App() {
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/favorite" element={<FavoritePage />} />
           <Route path="/search" element={<SearchResult />} />
-          <Route path="/recipe/:id" element={<RecipeDetail />} />
           <Route path="/recipe-upload" element={<RecipeUpload />} />
+          <Route path="/recipe/details" element={<RecipeDetail />} />
           <Route path="/community" element={<CommunityPage />} /> 
         </Routes>
       
