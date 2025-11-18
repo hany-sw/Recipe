@@ -17,7 +17,13 @@ export default function SearchResult() {
   const [query, setQuery] = useState(ingredient || "");
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [favorites, setFavorites] = useState([]);
-  const [isAIMode, setIsAIMode] = useState(false);
+  const [isAIMode, setIsAIMode] = useState(() => {
+    const saved = localStorage.getItem("isAIMode");
+    return saved === "true";
+  });
+
+  // ⭐ 추가된 부분: 평점 상태 저장
+  const [ratings, setRatings] = useState({});
 
   // ✅ 초기 즐겨찾기 불러오기
   useEffect(() => {
@@ -31,6 +37,45 @@ export default function SearchResult() {
     };
     loadFavorites();
   }, []);
+
+  // ⭐ 평점 불러오기
+  const fetchRating = async (recipeId, recipeType) => {
+    try {
+      const res = await axios.get(`${BASE_URL}/rating/${recipeType}/${recipeId}`);
+      setRatings((prev) => ({
+        ...prev,
+        [recipeId]: res.data.averageRating || 0,
+      }));
+    } catch (err) {
+      console.error("평점 조회 실패:", err);
+    }
+  };
+
+  // ⭐ 평점 등록
+  const handleRate = async (recipe, value) => {
+    const recipeId = recipe.recipeId || recipe.userRecipeId || recipe.RCP_SEQ;
+    const recipeType = recipe.recipeId ? "PUBLIC" : "USER";
+
+    try {
+      await axios.post(
+        `${BASE_URL}/rating/rate`,
+        {
+          recipeId,
+          recipeType,
+          ratingScore: value,
+          likeFlag: false,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+      fetchRating(recipeId, recipeType); // 등록 후 평균 새로 불러오기
+    } catch (err) {
+      console.error("평점 등록 실패:", err);
+    }
+  };
 
   // ✅ 검색
   const fetchRecipes = async (keyword) => {
@@ -48,25 +93,53 @@ export default function SearchResult() {
         });
 
         const aiResults = res.data?.recommendations || [];
+        if (aiResults.length === 0) {
+          setRecipes([]);
+          setLoading(false);
+          return;
+        }
+
         const detailPromises = aiResults.map(async (foodName) => {
+          // console.log("🔍 요청되는 foodName:", foodName);
           try {
             const detail = await axios.get(
               `${BASE_URL}/recipes/recommend/ai/detail`,
-              { params: { foodName } }
+              {
+                params: { foodName },
+                headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
+              }
             );
-            return detail.data;
+            const data = detail.data;
+            if (!data || !data.title)
+              return { title: foodName, imageUrl: "", ingredients: "", description: "" };
+            return data;
           } catch (e) {
             console.error("AI 상세 요청 실패:", e);
-            return null;
+            return { title: foodName, imageUrl: "", ingredients: "", description: "" };
           }
         });
+
         const details = await Promise.all(detailPromises);
-        setRecipes(details.filter((r) => r !== null));
+        setRecipes(details);
+        const validDetails = details.filter((r) => r !== null);
+        setRecipes(validDetails);
+
+        // ⭐ 평점 미리 불러오기
+        validDetails.forEach((r) => {
+          const id = r.recipeId || r.userRecipeId;
+          if (id) fetchRating(id, r.recipeId ? "PUBLIC" : "USER");
+        });
       } else {
         res = await axios.get(`${BASE_URL}/recipes/search`, {
           params: { ingredients: keyword },
         });
         setRecipes(res.data || []);
+
+        // ⭐ 평점 미리 불러오기
+        res.data?.forEach((r) => {
+          const id = r.recipeId || r.userRecipeId;
+          if (id) fetchRating(id, r.recipeId ? "PUBLIC" : "USER");
+        });
       }
     } catch (error) {
       console.error("검색 오류:", error);
@@ -87,13 +160,10 @@ export default function SearchResult() {
   };
 
   const toggleFavorite = async (recipe) => {
-    const recipeId =
-      recipe.recipeId || recipe.userRecipeId || recipe.RCP_SEQ || null;
+    const recipeId = recipe.recipeId || recipe.userRecipeId || recipe.RCP_SEQ || null;
     if (!recipeId) return alert("즐겨찾기 불가능한 레시피입니다.");
 
-    const alreadyFavorite = favorites.some(
-      (f) => f.recipeId === parseInt(recipeId)
-    );
+    const alreadyFavorite = favorites.some((f) => f.recipeId === parseInt(recipeId));
 
     try {
       if (alreadyFavorite) {
@@ -109,15 +179,16 @@ export default function SearchResult() {
   };
 
   const isFavorite = (recipe) => {
-    const recipeId =
-      recipe.recipeId || recipe.userRecipeId || recipe.RCP_SEQ || null;
+    const recipeId = recipe.recipeId || recipe.userRecipeId || recipe.RCP_SEQ || null;
     return favorites.some((f) => f.recipeId === parseInt(recipeId));
   };
 
   // ✅ 상세 정보 불러오기 (모달 클릭 시 즉시 API 요청)
   const fetchRecipeDetail = async (recipeId) => {
+    console.log("📡 상세조회 요청 ID:", recipeId);
     try {
       const res = await axios.get(`${BASE_URL}/recipes/${recipeId}`);
+      console.log("📦 상세조회 응답:", res.data);
       setSelectedRecipe(res.data);
     } catch (err) {
       console.error("상세 레시피 불러오기 실패:", err);
@@ -150,7 +221,11 @@ export default function SearchResult() {
             <input
               type="checkbox"
               checked={isAIMode}
-              onChange={() => setIsAIMode(!isAIMode)}
+              onChange={() => {
+                const newMode = !isAIMode;
+                setIsAIMode(newMode);
+                localStorage.setItem("isAIMode", newMode); // ✅ 상태 저장
+              }}
             />
             🤖 AI 모드
           </label>
@@ -160,38 +235,58 @@ export default function SearchResult() {
       {/* 결과 */}
       <div className="search-result">
         <h2>
-          {isAIMode
-            ? `🤖 AI 추천 결과 (${query})`
-            : `🔍 "${ingredient}" 관련 레시피`}
+          {isAIMode ? `🤖 AI 추천 결과 (${query})` : `🔍 "${ingredient}" 관련 레시피`}
         </h2>
         {loading ? (
           <p>불러오는 중...</p>
         ) : (
           <div className="recipe-list">
             {recipes.length > 0 ? (
-              recipes.map((item, idx) => (
-                <div
-                  key={item.recipeId || item.RCP_SEQ || idx}
-                  className="recipe-card"
-                  onClick={() =>
-                    item.recipeId
-                      ? fetchRecipeDetail(item.recipeId)
-                      : setSelectedRecipe(item)
-                  }
-                >
-                  <img
-                    src={
-                      item.imageUrl ||
-                      item.ATT_FILE_NO_MAIN ||
-                      "https://via.placeholder.com/200x150?text=No+Image"
-                    }
-                    alt={item.title || item.RCP_NM || "레시피 이미지"}
-                  />
-                  <h3>{item.title || item.RCP_NM || item.name}</h3>
-                </div>
-              ))
+              recipes.map((item, idx) => {
+                const title =
+                  typeof item === "string"
+                    ? item
+                    : item.title || item.RCP_NM || item.name || "제목 없음";
+
+                const image =
+                  item.imageUrl && item.imageUrl.trim() !== ""
+                    ? item.imageUrl
+                    : item.ATT_FILE_NO_MAIN ||
+                      "https://via.placeholder.com/200x150?text=No+Image";
+
+                const recipeId = item.recipeId || item.userRecipeId || item.RCP_SEQ;
+
+                return (
+                  <div
+                    key={recipeId || item.RCP_SEQ || item.title || idx}
+                    className="recipe-card"
+                    onClick={() => setSelectedRecipe(item)}
+                  >
+                    <img src={image} alt={title} />
+                    <h3>{title}</h3>
+
+                    {/* ⭐ 평점 표시 */}
+                    <div className="rating" onClick={(e) => e.stopPropagation()}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <span
+                          key={star}
+                          onClick={() => handleRate(item, star)}
+                          className={
+                            star <= (ratings[recipeId] || 0) ? "star active" : "star"
+                          }
+                        >
+                          ★
+                        </span>
+                      ))}
+                      <span className="rating-text">
+                        ({ratings[recipeId]?.toFixed?.(1) || 0})
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
             ) : (
-              <p>검색 결과가 없습니다 😢</p>
+              <p>검색 결과가 없습니다 </p>
             )}
           </div>
         )}
@@ -231,25 +326,44 @@ export default function SearchResult() {
                   : "🤍 즐겨찾기 추가"}
               </button>
               <button
-  className="detail-btn"
-  onClick={() => {
-    // ✅ title만 넘기기
-    const title =
-      selectedRecipe.RCP_NM ||
-      selectedRecipe.name ||
-      selectedRecipe.baseRecipeName;
+                className="detail-btn"
+                onClick={() => {
+                  // 1️⃣ 사용자 레시피
+                  if (selectedRecipe.userRecipeId) {
+                    navigate("/recipe/details", {
+                      state: { userRecipes: [selectedRecipe] },
+                    });
+                    return;
+                  }
 
-      console.log("✅ 전달할 title:", title); // ← 꼭 확인
-    if (!title) {
-      alert("레시피 제목을 찾을 수 없습니다!");
-      return;
-    }
+                  // 2️⃣ AI 레시피 (recipeId = null)
+                  if (
+                    selectedRecipe.recipeId === null ||
+                    selectedRecipe.createdBy === "AI"
+                  ) {
+                    navigate("/recipe/details", {
+                      state: { aiRecipe: selectedRecipe },
+                    });
+                    return;
+                  }
 
-    navigate(`/recipe/details`, { state: { title } });
-  }}
->
-  🔍 상세 레시피 보기
-</button>
+                  // 3️⃣ 공공데이터 레시피
+                  const title =
+                    selectedRecipe.title ||
+                    selectedRecipe.RCP_NM ||
+                    selectedRecipe.name ||
+                    selectedRecipe.baseRecipeName;
+
+                  if (!title) {
+                    alert("레시피 제목을 찾을 수 없습니다!");
+                    return;
+                  }
+
+                  navigate("/recipe/details", { state: { title } });
+                }}
+              >
+                🔍 상세 레시피 보기
+              </button>
             </div>
           </div>
         </div>

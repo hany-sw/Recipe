@@ -33,10 +33,8 @@ instance.interceptors.response.use(
         if (!refreshToken) throw new Error("리프레시 토큰 없음");
 
         // ✅ refreshToken으로 accessToken 재발급 요청
-        const res = await axios.post(`${BASE_URL}/auth/refresh`, null, {
-          headers: {
-            Authorization: `Bearer ${refreshToken}`,
-          },
+        const res = await axios.post(`${BASE_URL}/refresh`, {
+          refreshToken: refreshToken,
         });
 
         const newAccessToken = res.data.accessToken;

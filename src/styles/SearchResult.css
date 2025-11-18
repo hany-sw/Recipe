@@ -279,3 +279,29 @@
 .favorite-btn.active {
   background-color: #ff4d6d;
 }
+.rating {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 8px;
+  gap: 2px;
+}
+
+.star {
+  font-size: 20px;
+  color: #ccc;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.star.active,
+.star:hover {
+  color: #ffb400;
+  transform: scale(1.1);
+}
+
+.rating-text {
+  font-size: 14px;
+  color: #555;
+  margin-left: 4px;
+}

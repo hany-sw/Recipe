@@ -1,11 +1,7 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { getProfile, updateProfile, logout } from "../api/api";
 import "../styles/MyPage.css";
-// import { ToastContainer, toast } from "react-toastify";
-// import "react-toastify/dist/ReactToastify.css";
-
-
-
 
 export default function MyPage() {
   const [profile, setProfile] = useState(null);
@@ -17,6 +13,8 @@ export default function MyPage() {
     email: "",
     password: "",
   });
+
+  const navigate = useNavigate();
 
   // ✅ 프로필 불러오기
   useEffect(() => {
@@ -71,13 +69,11 @@ export default function MyPage() {
     <div className="mypage-container">
       {/* 상단 프로필 카드 */}
       <section className="profile-card">
-        {/* 오른쪽 상단 프로필 수정 버튼 */}
         <div className="edit-top-right" onClick={() => setEditModalOpen(true)}>
           ✏️ <span>프로필 수정</span>
         </div>
 
         <div className="profile-left">
-          {/* 프로필 이미지 */}
           <div
             className="profile-img-wrapper"
             onClick={() => setPhotoMenuOpen(!photoMenuOpen)}
@@ -89,7 +85,6 @@ export default function MyPage() {
             />
           </div>
 
-          {/* 사진 메뉴 팝업 */}
           {photoMenuOpen && (
             <div className="photo-menu">
               <button
@@ -120,23 +115,33 @@ export default function MyPage() {
         </div>
 
         <div className="profile-right">
-          <p><b>이름:</b> {profile.username}</p>
-          <p><b>이메일:</b> {profile.email}</p>
+          <p>
+            <b>이름:</b> {profile.username}
+          </p>
+          <p>
+            <b>이메일:</b> {profile.email}
+          </p>
         </div>
       </section>
+
+      {/* ✅ 메뉴 네비게이션 */}
+      <div className="menu-list">
+        <button onClick={() => navigate("/my-posts")}>📜 내가 쓴 글</button>
+        <button onClick={() => navigate("/my-comments")}>💬 내가 쓴 댓글</button>
+        <button onClick={() => navigate("/recipe-upload")}>🍳 내가 쓴 레시피</button>
+        <button onClick={() => navigate("/favorite")}>❤️ 내 즐겨찾기</button>
+      </div>
 
       {/* 로그아웃 버튼 */}
       <div className="logout-section">
         <button onClick={handleLogout}>로그아웃</button>
       </div>
+      
 
       {/* 수정 모달 */}
       {editModalOpen && (
         <div className="modal-overlay" onClick={() => setEditModalOpen(false)}>
-          <div
-            className="modal-content"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h3>프로필 수정</h3>
             <input
               type="text"

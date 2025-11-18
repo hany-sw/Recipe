@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { getProfile } from "../api/api";
-import instance from "../api/api"; 
+import instance from "../api/api";
 import "../styles/RecipeUpload.css";
 
 export default function RecipeUpload() {
@@ -8,6 +8,7 @@ export default function RecipeUpload() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [selectedRecipe, setSelectedRecipe] = useState(null); // ✅ 상세보기용 추가
   const [recipe, setRecipe] = useState({
     name: "",
     description: "",
@@ -77,7 +78,6 @@ export default function RecipeUpload() {
         });
         alert("레시피가 수정되었습니다!");
       } else {
-        // ✅ 변경된 백엔드 경로에 맞춰 수정
         await instance.post(`/recipes/user`, payload, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -221,17 +221,30 @@ export default function RecipeUpload() {
         ) : (
           <div className="recipe-grid">
             {myRecipes.map((r) => (
-              <div key={r.userRecipeId} className="recipe-card">
+              <div
+                key={r.userRecipeId}
+                className="recipe-card"
+                onClick={() => setSelectedRecipe(r)} // ✅ 클릭 시 상세보기 모달 열기
+              >
                 {r.imageUrl && <img src={r.imageUrl} alt={r.name} />}
                 <h3>{r.name}</h3>
                 <p>{r.description.slice(0, 50)}...</p>
                 <div className="edit-btns">
-                  <button className="edit-btn" onClick={() => handleEdit(r)}>
+                  <button
+                    className="edit-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEdit(r);
+                    }}
+                  >
                     ✏️ 수정
                   </button>
                   <button
                     className="delete-btn"
-                    onClick={() => handleDelete(r.userRecipeId)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(r.userRecipeId);
+                    }}
                   >
                     🗑 삭제
                   </button>
@@ -241,6 +254,39 @@ export default function RecipeUpload() {
           </div>
         )}
       </div>
+
+      {/* ✅ 상세보기 모달 */}
+      {selectedRecipe && (
+        <div
+          className="modal-overlay"
+          onClick={() => setSelectedRecipe(null)}
+        >
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="close-modal-btn"
+              onClick={() => setSelectedRecipe(null)}
+            >
+              ✖
+            </button>
+            <h2>{selectedRecipe.name}</h2>
+            {selectedRecipe.imageUrl && (
+              <img
+                src={selectedRecipe.imageUrl}
+                alt={selectedRecipe.name}
+                className="detail-image"
+              />
+            )}
+            <p><strong>🧂 재료:</strong> {selectedRecipe.ingredients || "정보 없음"}</p>
+            <p><strong>🍳 설명:</strong> {selectedRecipe.description}</p>
+            {selectedRecipe.baseRecipeName && (
+              <p><strong>📖 참고:</strong> {selectedRecipe.baseRecipeName}</p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -2,14 +2,22 @@
   box-sizing: border-box;
 }
 
+/* ==============================
+📱 기본 레이아웃
+============================== */
 .mypage-container {
-  max-width: 600px;
-  margin: 70px auto;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 0;
+  background-color: #fff8f0;
+  min-height: 100vh;
   font-family: "Pretendard", sans-serif;
 }
 
-/* 🧍 프로필 카드 */
+/* ==============================
+🧍 프로필 카드
+============================== */
 .profile-card {
   position: relative;
   display: flex;
@@ -19,9 +27,36 @@
   border-radius: 16px;
   padding: 30px;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 420px;
+  margin-bottom: 30px;
 }
 
-/* ✏️ 프로필 수정 버튼 (오른쪽 상단) */
+.profile-img {
+  width: 200px;  /* ✅ 기존 100px → 140px */
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 25px;
+  transition: 0.25s ease;
+  border: none; /* ✅ 테두리 제거 */
+}
+
+.profile-img:hover {
+  transform: scale(1.05);
+}
+
+.profile-info p {
+  margin: 8px 0;
+  font-size: 17px;
+  color: #333;
+}
+
+.profile-info b {
+  color: #ff8b3d;
+}
+
+/* ✏️ 프로필 수정 버튼 */
 .edit-top-right {
   position: absolute;
   top: 15px;
@@ -40,75 +75,39 @@
   transform: scale(1.05);
 }
 
-/* 왼쪽: 프로필 이미지 */
-.profile-img-wrapper {
-  position: relative;
-  cursor: pointer;
+/* ==============================
+📋 메뉴 리스트
+============================== */
+.menu-list {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+  width: 90%;
+  max-width: 420px;
+  gap: 10px;
 }
 
-.profile-img {
-  width: 180px; /* ✅ 큰 사이즈 */
-  height: 180px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid #000000; /* ✅ 아주 얇은 검정 테두리 */
+.menu-list button {
+  background: #fff3e0;
+  border: 1px solid #ffd9a0;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 16px;
+  cursor: pointer;
   transition: 0.2s;
 }
 
-.profile-img:hover {
-  transform: scale(1.02);
+.menu-list button:hover {
+  background: #ffe2b8;
 }
 
-/* 사진 메뉴 팝업 */
-.photo-menu {
-  position: absolute;
-  top: 190px; /* 이미지 바로 아래 */
-  left: 0;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  width: 140px;
-  display: flex;
-  flex-direction: column;
-  z-index: 200;
-  animation: fadeIn 0.2s ease;
-}
-
-.photo-menu button {
-  background: none;
-  border: none;
-  padding: 10px;
-  text-align: left;
-  font-size: 14px;
-  cursor: pointer;
-  color: #333;
-}
-
-.photo-menu button:hover {
-  background: #fff4e5;
-  color: #ff8b3d;
-}
-
-/* 오른쪽: 이름/이메일 */
-.profile-right {
-  margin-left: 30px;
-  text-align: left;
-}
-
-.profile-right p {
-  margin: 10px 0;
-  font-size: 18px;
-  color: #333;
-}
-
-.profile-right b {
-  color: #ff8b3d;
-}
-
-/* 로그아웃 버튼 */
+/* ==============================
+🚪 로그아웃 버튼
+============================== */
 .logout-section {
-  margin-top: 40px;
+  margin-top: 60px; /* ✅ 기존보다 아래로 내림 */
+  display: flex;
+  justify-content: center;
 }
 
 .logout-section button {
@@ -126,11 +125,13 @@
   background: #222;
 }
 
-/* 수정 모달 */
+/* ==============================
+🪄 모달 (프로필 수정 등)
+============================== */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -177,32 +178,49 @@
   to { opacity: 1; transform: scale(1); }
 }
 
-/* 📱 모바일 대응 */
+/* ==============================
+📱 모바일 반응형 (480px 이하)
+============================== */
 @media screen and (max-width: 480px) {
-  .profile-card {
-    flex-direction: column;
-    text-align: center;
+  .mypage-container {
+    padding: 20px 10px;
   }
 
-  .profile-right {
-    margin-left: 0;
-    margin-top: 15px;
+  .profile-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
   }
 
   .profile-img {
-    width: 150px;
-    height: 150px;
+    width: 120px;
+    height: 120px;
+    margin: 0 0 15px 0;
   }
 
-  .photo-menu {
-    top: 160px;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-
-  .edit-top-right {
-    top: 10px;
-    right: 12px;
+  .profile-info p {
     font-size: 15px;
+  }
+
+  .edit-btn {
+    top: 10px;
+    right: 15px;
+    font-size: 14px;
+  }
+
+  .menu-list {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .menu-list button {
+    font-size: 14px;
+    padding: 12px;
+  }
+
+  .logout-btn {
+    width: 90%;
+    font-size: 14px;
   }
 }

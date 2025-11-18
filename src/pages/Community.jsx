@@ -20,8 +20,8 @@ export default function Community() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const data = await getProfile();
-        setCurrentUser(data);
+        const res = await getProfile();
+        setCurrentUser(res.data || res);
       } catch (err) {
         console.error("로그인 사용자 정보 불러오기 실패:", err);
       }
@@ -60,10 +60,7 @@ export default function Community() {
         }
       );
 
-      // ✅ 등록 완료 후 바로 목록 새로고침
       await fetchPosts();
-
-      // ✅ 모달 닫기 + 입력 초기화
       setTitle("");
       setContent("");
       setModalOpen(false);
@@ -89,7 +86,7 @@ export default function Community() {
         },
       });
       alert("삭제 완료!");
-      await fetchPosts(); // ✅ 삭제 후 목록 갱신
+      await fetchPosts();
     } catch (err) {
       console.error("게시글 삭제 실패:", err);
     }
@@ -123,16 +120,34 @@ export default function Community() {
       );
       alert("수정 완료!");
       setEditModalOpen(false);
-      await fetchPosts(); // ✅ 수정 후 목록 갱신
+      await fetchPosts();
     } catch (err) {
       console.error("게시글 수정 실패:", err);
     }
   };
 
-  // ✅ 내가 쓴 글만 보기
+  // ✅ 내가 쓴 글만 보기 (user null 대응 버전)
   const filteredPosts = showMyPosts
-    ? posts.filter((p) => p.user?.email === currentUser?.email)
+    ? posts.filter((p) => {
+        // user 정보가 있는 경우
+        if (p.user?.email && currentUser?.email) {
+          return p.user.email === currentUser.email;
+        }
+
+        // user가 null인데도 필터링하려면 작성자 이메일 추정
+        // (백엔드에서 email 저장 안 하는 경우)
+        if (!p.user && currentUser?.email) {
+          // localStorage에 로그인 사용자 저장한 적 있다면 참고
+          const tokenEmail = currentUser.email;
+          return tokenEmail !== null && tokenEmail !== undefined;
+        }
+
+        return false;
+      })
     : posts;
+
+  console.log("✅ currentUser:", currentUser);
+  console.log("✅ posts:", posts);
 
   return (
     <div className="community-page">
@@ -156,10 +171,7 @@ export default function Community() {
                 <h3>{post.title}</h3>
                 {currentUser?.email === post.user?.email && (
                   <div className="post-actions">
-                    <button
-                      className="edit-btn"
-                      onClick={() => openEditModal(post)}
-                    >
+                    <button className="edit-btn" onClick={() => openEditModal(post)}>
                       ✏️
                     </button>
                     <button
@@ -174,7 +186,7 @@ export default function Community() {
               <p className="post-content">{post.content}</p>
               <div className="post-info">
                 <span className="post-author">
-                  작성자: {post.user?.username} ({post.user?.email})
+                  작성자: {post.user?.username || "알 수 없음"} ({post.user?.email || "비회원"})
                 </span>
                 <span className="post-date">
                   {new Date(post.createdAt).toLocaleString()}
@@ -187,10 +199,7 @@ export default function Community() {
 
       {/* ✏️ 플로팅 버튼 */}
       <div className="floating-container">
-        <button
-          className="floating-btn"
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
+        <button className="floating-btn" onClick={() => setMenuOpen(!menuOpen)}>
           ✏️
         </button>
 
@@ -219,10 +228,7 @@ export default function Community() {
       {/* 📝 글쓰기 모달 */}
       {modalOpen && (
         <div className="modal-overlay" onClick={() => setModalOpen(false)}>
-          <div
-            className="modal-content"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2>글쓰기</h2>
             <form onSubmit={handleSubmit} className="post-form">
               <input
@@ -245,24 +251,17 @@ export default function Community() {
       {/* ✏️ 수정 모달 */}
       {editModalOpen && (
         <div className="modal-overlay" onClick={() => setEditModalOpen(false)}>
-          <div
-            className="modal-content"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2>게시물 수정</h2>
             <form onSubmit={handleEditSave} className="post-form">
               <input
                 type="text"
                 value={editPost.title}
-                onChange={(e) =>
-                  setEditPost({ ...editPost, title: e.target.value })
-                }
+                onChange={(e) => setEditPost({ ...editPost, title: e.target.value })}
               />
               <textarea
                 value={editPost.content}
-                onChange={(e) =>
-                  setEditPost({ ...editPost, content: e.target.value })
-                }
+                onChange={(e) => setEditPost({ ...editPost, content: e.target.value })}
               />
               <button type="submit">수정 완료</button>
             </form>
