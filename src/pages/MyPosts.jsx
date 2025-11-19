@@ -45,11 +45,12 @@ export default function MyPosts() {
   }, [currentUser]);
 
   return (
-    <div className="community-page">
-      <h1>✏️ 내가 쓴 글</h1>
+    <div className="empty-state">
+      <h1>내가 쓴 글</h1>
+        
 
       {myPosts.length === 0 ? (
-        <div className="empty-bubble">💬 내가 쓴 글이 없습니다.</div>
+        <p className="empty">작성한 게시물이 없습니다</p>
       ) : (
         <div className="post-list">
           {myPosts.map((post) => (

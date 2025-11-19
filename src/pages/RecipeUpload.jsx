@@ -141,7 +141,7 @@ export default function RecipeUpload() {
   };
 
   return (
-    <div className="upload-page">
+    <div className="empty-state">
       <h1>나만의 레시피 관리</h1>
 
       {/* 플로팅 버튼 */}

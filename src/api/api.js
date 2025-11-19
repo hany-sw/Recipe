@@ -109,4 +109,11 @@ export const addFavorite = (recipeId) =>
 export const removeFavorite = (recipeId) =>
   instance.delete(`/favorites/${recipeId}`);
 
+// ⭐ 내가 준 평점 목록 조회
+export const getMyRatings = () =>
+  instance.get("/rating/my", {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+    },
+  });
 export default instance;

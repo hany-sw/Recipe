@@ -49,10 +49,10 @@ export default function FavoritePage() {
 
   return (
     <div className="favorite-page">
-      <h1>⭐ 즐겨찾기한 레시피</h1>
+      <h1>즐겨찾기한 레시피</h1>
 
       {favorites.length === 0 ? (
-        <p className="empty">즐겨찾기한 레시피가 없습니다 😢</p>
+        <p className="empty">즐겨찾기한 레시피가 없습니다</p>
       ) : (
         <div className="favorite-list">
           {favorites.map((f) => {
@@ -104,7 +104,7 @@ export default function FavoritePage() {
               <button
                 className="detail-btn"
                 onClick={() =>
-                  navigate(`/recipe/${selectedRecipe.recipeId}`, {
+                  navigate("/recipe/details", {
                     state: { recipe: selectedRecipe },
                   })
                 }

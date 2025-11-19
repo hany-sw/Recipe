@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { getProfile, updateProfile, logout } from "../api/api";
 import "../styles/MyPage.css";
 
@@ -15,6 +16,7 @@ export default function MyPage() {
   });
 
   const navigate = useNavigate();
+  const BASE_URL = "http://210.110.33.220:8183/api";
 
   // ✅ 프로필 불러오기
   useEffect(() => {
@@ -60,6 +62,26 @@ export default function MyPage() {
     localStorage.removeItem("refreshToken");
     alert("로그아웃되었습니다.");
     window.location.href = "/login";
+  };
+
+  // ✅ 회원탈퇴
+  const handleDeleteAccount = async () => {
+    if (!window.confirm("정말 탈퇴하시겠습니까? 모든 데이터가 삭제됩니다.")) return;
+
+    try {
+      await axios.delete(`${BASE_URL}/delete`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      alert("회원탈퇴가 완료되었습니다.");
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      window.location.href = "/signup";
+    } catch (err) {
+      console.error("회원탈퇴 실패:", err);
+      alert("회원탈퇴 중 오류가 발생했습니다.");
+    }
   };
 
   if (!profile)
@@ -130,13 +152,27 @@ export default function MyPage() {
         <button onClick={() => navigate("/my-comments")}>💬 내가 쓴 댓글</button>
         <button onClick={() => navigate("/recipe-upload")}>🍳 내가 쓴 레시피</button>
         <button onClick={() => navigate("/favorite")}>❤️ 내 즐겨찾기</button>
+        <button onClick={() => navigate("/my-ratings")}>⭐ 내가 준 별점</button>
       </div>
 
-      {/* 로그아웃 버튼 */}
+      {/* 로그아웃 & 회원탈퇴 버튼 */}
       <div className="logout-section">
         <button onClick={handleLogout}>로그아웃</button>
+        <button
+          onClick={handleDeleteAccount}
+          style={{
+            marginTop: "10px",
+            fontSize: "14px",
+            color: "#ff4d4d",
+            background: "none",
+            border: "none",
+            textDecoration: "underline",
+            cursor: "pointer",
+          }}
+        >
+          회원탈퇴
+        </button>
       </div>
-      
 
       {/* 수정 모달 */}
       {editModalOpen && (

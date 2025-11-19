@@ -4,6 +4,7 @@ import MainPage from "./pages/MainPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import MyPage from "./pages/MyPage";
+import MyRatedRecipes from "./pages/MyRatedRecipes";
 import MyPosts from "./pages/MyPosts";
 import RecipeUpload from "./pages/RecipeUpload";
 import FavoritePage from "./pages/FavoritePage";
@@ -21,6 +22,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/mypage" element={<MyPage />} />
+          <Route path="/my-ratings" element={<MyRatedRecipes />} />
           <Route path="/my-posts" element={<MyPosts />} />
           <Route path="/favorite" element={<FavoritePage />} />
           <Route path="/search" element={<SearchResult />} />
