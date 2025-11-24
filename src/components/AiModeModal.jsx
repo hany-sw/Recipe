@@ -1,30 +1,40 @@
 import { useState } from "react";
-import "../styles/MainPage.css"; // 버튼/모달 스타일 재사용
+import { useNavigate } from "react-router-dom";
+import {
+  aiStart,
+  aiSetAllergy,
+  aiSetDifficulty,
+  aiSetIngredientsAndRecommend,
+} from "../api/api";
+import "../styles/MainPage.css";
 
-export default function AiModeModal({ open, onClose, onConfirm, initial }) {
+export default function AiModeModal({ open, onClose, initial }) {
   if (!open) return null;
 
   const [prefs, setPrefs] = useState(
     initial || {
-      cuisines: [],   // ["한식","양식"...]
-      allergies: [],  // ["우유","밀"...]
-      difficulty: "", // "쉬움" 등
-      mealTime: "",   // "아침" 등
-      weather: "",    // "맑음" 등
-      ingredients: "",// "달걀, 양파"
+      foodPreference: "", // ✅ 단일 선택
+      allergies: [],      // 다중
+      difficulty: "",     // 단일
+      mealTime: "",       // 단일
+      weather: "",        // 단일
+      ingredients: "",    // 텍스트
     }
   );
   const [allergyInput, setAllergyInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const toggleMulti = (key, value) => {
+  const setSingle = (key, value) => setPrefs((p) => ({ ...p, [key]: value }));
+
+  const toggleAllergy = (value) => {
     setPrefs((prev) => {
-      const arr = prev[key] ?? [];
+      const arr = prev.allergies ?? [];
       return arr.includes(value)
-        ? { ...prev, [key]: arr.filter((v) => v !== value) }
-        : { ...prev, [key]: [...arr, value] };
+        ? { ...prev, allergies: arr.filter((v) => v !== value) }
+        : { ...prev, allergies: [...arr, value] };
     });
   };
-  const setSingle = (key, value) => setPrefs((p) => ({ ...p, [key]: value }));
 
   const addCustomAllergy = () => {
     const v = allergyInput.trim();
@@ -39,20 +49,88 @@ export default function AiModeModal({ open, onClose, onConfirm, initial }) {
 
   const chip = (active) => `chip ${active ? "active" : ""}`;
 
+  const runAI = async () => {
+    if (!prefs.ingredients.trim()) {
+      alert("재료를 입력해주세요!");
+      return;
+    }
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // 1) 세션 시작 (백엔드 필드명에 맞춰 전달)
+      const startRes = await aiStart({
+        foodPreference: prefs.foodPreference || "",
+        allergy: prefs.allergies[0] || "", // 초기 1개 전달(선택)
+        difficulty: prefs.difficulty || "",
+        mealTime: prefs.mealTime || "",
+        weather: prefs.weather || "",
+        ingredients: "", // 실제 재료는 아래 단계에서
+      });
+      const sessionId = startRes.data?.sessionId;
+      if (!sessionId) throw new Error("세션 ID를 받지 못했습니다.");
+
+      // 2) 알러지들 반영 (여러 개면 여러 번 호출)
+      for (const a of prefs.allergies) {
+        await aiSetAllergy(sessionId, a);
+      }
+
+      // 3) 난이도 반영
+      if (prefs.difficulty) {
+        await aiSetDifficulty(sessionId, prefs.difficulty);
+      }
+
+      // 4) 재료 입력 → 추천 받기
+      const recRes = await aiSetIngredientsAndRecommend(sessionId, prefs.ingredients);
+      const data = recRes.data || {};
+      const results =
+        data.recommendations ||
+        data.items ||
+        data.titles ||
+        data.list ||
+        (Array.isArray(data) ? data : []);
+
+      navigate("/ai-results", {
+        state: {
+          results: Array.isArray(results) ? results : [],
+          preferences: {
+            foodPreference: prefs.foodPreference,  // ✅ 여기로 변경
+            allergies: prefs.allergies,
+            difficulty: prefs.difficulty,
+            meals: [prefs.mealTime].filter(Boolean),
+            weather: [prefs.weather].filter(Boolean),
+            ingredients: prefs.ingredients,
+          },
+          raw: data,
+        },
+      });
+      onClose?.();
+    } catch (err) {
+      console.error("AI 추천 실패:", err);
+      alert(err.response?.data || err.message || "AI 추천 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content ai" onClick={(e) => e.stopPropagation()}>
         <button className="close-btn" onClick={onClose}>✖</button>
         <h2>🤖 AI 추천 모드</h2>
 
-        {/* 1) 선호 음식(다중) */}
+        {/* 1) 선호 음식 (단일) */}
         <section className="ai-row">
-          <h4>선호 음식(다중)</h4>
+          <h4>선호 음식</h4>
           {["한식","양식","중식","비건","동남아","그 외"].map((c) => (
             <button
               key={c}
-              className={chip(prefs.cuisines.includes(c))}
-              onClick={() => toggleMulti("cuisines", c)}
+              className={chip(prefs.foodPreference === c)}
+              onClick={() => setSingle("foodPreference", c)}
             >
               {c}
             </button>
@@ -66,7 +144,7 @@ export default function AiModeModal({ open, onClose, onConfirm, initial }) {
             <button
               key={a}
               className={chip(prefs.allergies.includes(a))}
-              onClick={() => toggleMulti("allergies", a)}
+              onClick={() => toggleAllergy(a)}
             >
               {a}
             </button>
@@ -139,8 +217,8 @@ export default function AiModeModal({ open, onClose, onConfirm, initial }) {
         </section>
 
         <div className="ai-actions">
-          <button className="start-ai-btn" onClick={() => onConfirm(prefs)}>
-            확인 → 추천 받기
+          <button className="start-ai-btn" onClick={runAI} disabled={loading}>
+            {loading ? "추천 중..." : "확인 → 추천 받기"}
           </button>
         </div>
       </div>
