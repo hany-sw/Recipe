@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   aiStart,
@@ -9,34 +9,49 @@ import {
 import "../styles/MainPage.css";
 
 export default function AiModeModal({ open, onClose, initial }) {
-  if (!open) return null;
-
-  const [prefs, setPrefs] = useState(
-    initial || {
-      foodPreference: "", // ✅ 단일 선택
-      allergies: [],      // 다중
-      difficulty: "",     // 단일
-      mealTime: "",       // 단일
-      weather: "",        // 단일
-      ingredients: "",    // 텍스트
-    }
-  );
-  const [allergyInput, setAllergyInput] = useState("");
-  const [loading, setLoading] = useState(false);
+  // 🔒 훅은 항상 같은 순서로 실행 (open 여부와 무관하게 컴포넌트는 항상 렌더됨)
   const navigate = useNavigate();
 
-  const setSingle = (key, value) => setPrefs((p) => ({ ...p, [key]: value }));
+  const safeInitial = useMemo(
+    () =>
+      initial || {
+        foodPreference: "",
+        allergies: [],
+        difficulty: "",
+        mealTime: "",
+        weather: "",
+        ingredients: "",
+      },
+    [initial]
+  );
 
-  const toggleAllergy = (value) => {
+  const [prefs, setPrefs] = useState(safeInitial);
+  const [allergyInput, setAllergyInput] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // open이 꺼졌다 켜질 때마다 초기화하고 싶다면:
+  useEffect(() => {
+    if (open) {
+      setPrefs(safeInitial);
+      setAllergyInput("");
+    }
+  }, [open, safeInitial]);
+
+  const setSingle = useCallback(
+    (key, value) => setPrefs((p) => ({ ...p, [key]: value })),
+    []
+  );
+
+  const toggleAllergy = useCallback((value) => {
     setPrefs((prev) => {
       const arr = prev.allergies ?? [];
       return arr.includes(value)
         ? { ...prev, allergies: arr.filter((v) => v !== value) }
         : { ...prev, allergies: [...arr, value] };
     });
-  };
+  }, []);
 
-  const addCustomAllergy = () => {
+  const addCustomAllergy = useCallback(() => {
     const v = allergyInput.trim();
     if (!v) return;
     setPrefs((prev) =>
@@ -45,11 +60,11 @@ export default function AiModeModal({ open, onClose, initial }) {
         : { ...prev, allergies: [...prev.allergies, v] }
     );
     setAllergyInput("");
-  };
+  }, [allergyInput]);
 
-  const chip = (active) => `chip ${active ? "active" : ""}`;
+  const chip = useCallback((active) => `chip ${active ? "active" : ""}`, []);
 
-  const runAI = async () => {
+  const runAI = useCallback(async () => {
     if (!prefs.ingredients.trim()) {
       alert("재료를 입력해주세요!");
       return;
@@ -62,50 +77,48 @@ export default function AiModeModal({ open, onClose, initial }) {
 
     setLoading(true);
     try {
-      // 1) 세션 시작 (백엔드 필드명에 맞춰 전달)
+      // 1) 세션 시작
       const startRes = await aiStart({
         foodPreference: prefs.foodPreference || "",
-        allergy: prefs.allergies[0] || "", // 초기 1개 전달(선택)
+        allergy: prefs.allergies[0] || "",
         difficulty: prefs.difficulty || "",
         mealTime: prefs.mealTime || "",
         weather: prefs.weather || "",
-        ingredients: "", // 실제 재료는 아래 단계에서
+        ingredients: "", // 재료는 아래 단계에서 보냄
       });
       const sessionId = startRes.data?.sessionId;
       if (!sessionId) throw new Error("세션 ID를 받지 못했습니다.");
 
-      // 2) 알러지들 반영 (여러 개면 여러 번 호출)
+      // 2) 알러지 전체 반영
       for (const a of prefs.allergies) {
         await aiSetAllergy(sessionId, a);
       }
 
-      // 3) 난이도 반영
-      if (prefs.difficulty) {
-        await aiSetDifficulty(sessionId, prefs.difficulty);
-      }
+      // 3) 난이도
+      if (prefs.difficulty) await aiSetDifficulty(sessionId, prefs.difficulty);
 
-      // 4) 재료 입력 → 추천 받기
+      // 4) 재료 입력 → 추천
       const recRes = await aiSetIngredientsAndRecommend(sessionId, prefs.ingredients);
-      const data = recRes.data || {};
+      const payload = recRes.data || {};
       const results =
-        data.recommendations ||
-        data.items ||
-        data.titles ||
-        data.list ||
-        (Array.isArray(data) ? data : []);
+        payload.recommendations ||
+        payload.items ||
+        payload.titles ||
+        payload.list ||
+        (Array.isArray(payload) ? payload : []);
 
       navigate("/ai-results", {
         state: {
           results: Array.isArray(results) ? results : [],
           preferences: {
-            foodPreference: prefs.foodPreference,  // ✅ 여기로 변경
+            foodPreference: prefs.foodPreference,
             allergies: prefs.allergies,
             difficulty: prefs.difficulty,
             meals: [prefs.mealTime].filter(Boolean),
             weather: [prefs.weather].filter(Boolean),
             ingredients: prefs.ingredients,
           },
-          raw: data,
+          raw: payload,
         },
       });
       onClose?.();
@@ -115,7 +128,12 @@ export default function AiModeModal({ open, onClose, initial }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate, onClose, prefs]);
+
+  // 표시만 제어
+  if (!open) {
+    return <div style={{ display: "none" }} aria-hidden="true" />;
+  }
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -195,7 +213,7 @@ export default function AiModeModal({ open, onClose, initial }) {
         {/* 5) 날씨 */}
         <section className="ai-row">
           <h4>오늘의 날씨</h4>
-          {["맑음","흐림","비","추움"].map((w) => (
+          {["맑음","흐림","비","추움","더움"].map((w) => (
             <button
               key={w}
               className={chip(prefs.weather === w)}

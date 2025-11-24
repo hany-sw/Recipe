@@ -150,3 +150,196 @@ body, html {
     transform: translateY(0);
   }
 }
+.recipe-detail-page {
+  max-width: 860px;
+  margin: 32px auto 64px;
+  padding: 0 16px;
+  font-family: "Pretendard", "Noto Sans KR", sans-serif;
+  color: #222;
+}
+
+.recipe-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 14px;
+}
+
+.error-text { color: crimson; }
+
+/* 메타 카드 */
+.meta-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.meta-card {
+  background: #fffaf5;
+  border: 1px solid #ffe2c7;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.meta-card.wide {
+  grid-column: 1 / -1;
+}
+.meta-label {
+  font-size: 0.85rem;
+  color: #ff8b3d;
+  font-weight: 700;
+}
+.meta-value { margin-top: 4px; font-weight: 600; }
+.nutri-row {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  margin-top: 6px; font-size: 0.95rem;
+}
+
+.main-image {
+  width: 100%;
+  max-height: 360px;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 1px solid #f1eee9;
+  margin: 10px 0 16px;
+}
+
+/* 재료 칩 */
+.ingredient-list {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  list-style: none; padding: 0; margin: 8px 0 20px;
+}
+.chip-ing {
+  background: #fff1e1;
+  color: #6b3d14;
+  border: 1px solid #ffd9b3;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.92rem;
+}
+
+/* 단계형 타임라인 */
+.steps {
+  list-style: none;
+  padding-left: 0;
+  margin: 8px 0 24px;
+}
+.step-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 10px;
+  padding: 14px 10px 14px 0;
+}
+.step-item::after {
+  content: "";
+  position: absolute;
+  left: 17px; /* 인덱스 원 중앙 정렬 위치 */
+  top: 44px;
+  bottom: -6px;
+  width: 2px;
+  background: #ffe0c4;
+}
+.step-item:last-child::after {
+  display: none;
+}
+.step-index {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: #ffeddc;
+  border: 2px solid #ffc999;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; color: #8a4b1f;
+}
+.step-body {
+  line-height: 1.6;
+  background: #fffdf9;
+  border: 1px dashed #ffd6ae;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+h2 {
+  margin-top: 18px;
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+.muted { color: #777; }
+
+/* 사용자 등록 레시피 */
+.user-recipes {
+  margin-top: 22px;
+}
+.user-recipe-card {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 14px;
+  align-items: start;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 10px;
+  background: #fff;
+}
+.user-recipe-card img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid #f0f0f0;
+}
+
+@media (max-width: 560px) {
+  .user-recipe-card {
+    grid-template-columns: 1fr;
+  }
+}
+/* 상단 토글 */
+.meta-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin: 6px 0 10px;
+}
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+.toggle input { transform: translateY(1px); }
+
+/* 기존 카드/이미지/칩/타임라인 스타일은 유지하고 아래만 추가 */
+
+.step-body .step-main {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.sub-steps {
+  margin: 6px 0 0 0;
+  padding-left: 0;
+  list-style: none;
+  border-left: 2px dashed #ffd8b8;
+}
+.sub-steps li {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 8px;
+  padding: 8px 10px;
+  margin-left: 10px;
+}
+.sub-index {
+  font-weight: 700;
+  color: #a65b26;
+}
+.sub-text {
+  line-height: 1.6;
+}
+
+.hint-list {
+  margin: 6px 0 0 0;
+  padding-left: 16px;
+  color: #555;
+  font-size: 0.95rem;
+}
+.hint-list li { margin: 2px 0; }

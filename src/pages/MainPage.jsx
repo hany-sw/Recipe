@@ -1,12 +1,6 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getProfile, logout } from "../api/api";
-import {
-  aiStart,
-  aiSetAllergy,
-  aiSetDifficulty,
-  aiSetIngredientsAndRecommend,
-} from "../api/api";
 import Top10List from "../components/Top10List";
 import AiModeModal from "../components/AiModeModal";
 import "../styles/MainPage.css";
@@ -18,18 +12,20 @@ export default function MainPage() {
   const [aiModalOpen, setAiModalOpen] = useState(false);
   const navigate = useNavigate();
 
+  // 프로필
   useEffect(() => {
     (async () => {
       try {
         const res = await getProfile();
-        setUserName(res.data.username);
+        setUserName(res.data?.username ?? "");
       } catch {
         setUserName("");
       }
     })();
   }, []);
 
-  const handleLogout = async () => {
+  // 로그아웃
+  const handleLogout = useCallback(async () => {
     try {
       await logout();
       localStorage.removeItem("accessToken");
@@ -41,72 +37,40 @@ export default function MainPage() {
     } catch (err) {
       alert(err.response?.data || err.message);
     }
-  };
+  }, [navigate]);
 
-  const handleSearch = () => {
+  // 검색
+  const handleSearch = useCallback(() => {
     if (!query.trim()) {
       alert("재료를 입력해주세요!");
       return;
     }
     navigate(`/search?ingredient=${encodeURIComponent(query)}`);
-  };
+  }, [navigate, query]);
 
-  // ✅ AI 모달 확인 → 단계형 호출
-  const handleConfirmAI = async (prefs) => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-      alert("로그인이 필요합니다.");
-      return;
-    }
-    try {
-      // 1) 세션 시작 (백엔드가 body를 받아도 되고 무시해도 OK)
-      const startRes = await aiStart({
-        foodPreference: (prefs.cuisines || []).join(","),
-        allergy: (prefs.allergies || []).join(","),
-        difficulty: prefs.difficulty || "",
-        mealTime: prefs.mealTime || "",
-        weather: prefs.weather || "",
-        ingredients: prefs.ingredients || "",
-      });
-      const sessionId = startRes.data?.sessionId;
-      if (!sessionId) throw new Error("세션 생성 실패");
+  // 모달 닫기 콜백 (메모이즈)
+  const closeAiModal = useCallback(() => setAiModalOpen(false), []);
 
-      // 2) (옵션) 알러지 여러 개면 여러 번 등록
-      for (const a of prefs.allergies || []) {
-        await aiSetAllergy(sessionId, a);
-      }
-      // 3) (옵션) 난이도
-      if (prefs.difficulty) {
-        await aiSetDifficulty(sessionId, prefs.difficulty);
-      }
-      // 4) 재료 입력 → 추천 응답 받기
-      if (!prefs.ingredients?.trim()) {
-        alert("재료를 입력해주세요!");
-        return;
-      }
-      const recRes = await aiSetIngredientsAndRecommend(sessionId, prefs.ingredients);
-      const recommendation = recRes.data || {}; // RecipeRecommendationResponse
-
-      // 5) 결과 페이지 이동
-      navigate("/ai-results", {
-        state: {
-          sessionId,
-          options: prefs,
-          recommendation, // titles/리스트 등이 들어있을 것
-        },
-      });
-      setAiModalOpen(false);
-    } catch (e) {
-      console.error(e);
-      alert(e.response?.data || e.message || "AI 추천 중 오류가 발생했습니다.");
-    }
-  };
+  // 모달 초기값(안정된 ref 제공을 위해 useMemo)
+  const aiInitial = useMemo(
+    () => ({
+      foodPreference: "",
+      allergies: [],
+      difficulty: "",
+      mealTime: "",
+      weather: "",
+      ingredients: "",
+    }),
+    []
+  );
 
   return (
     <div className="main-page">
       <header className="site-header">
         <h1 className="logo">🍳 냉장고 레시피</h1>
-        <div className="menu-icon" onClick={() => setMenuOpen(!menuOpen)}>☰</div>
+        <div className="menu-icon" onClick={() => setMenuOpen((v) => !v)}>
+          ☰
+        </div>
 
         {menuOpen && (
           <div className="dropdown-menu">
@@ -132,7 +96,6 @@ export default function MainPage() {
       </header>
 
       <main className="main-content">
-        {/* 검색 */}
         <div className="search-section">
           <p className="search-guide">냉장고에 있는 재료를 입력하세요 🥕</p>
           <div className="search-box">
@@ -154,18 +117,18 @@ export default function MainPage() {
           </div>
         </div>
 
-        {/* 인기 레시피 */}
         <div className="top10-box">
           <h2>🔥 인기 레시피 TOP 10</h2>
           <Top10List />
         </div>
       </main>
 
-      {/* AI 모달 */}
+      {/* 🔧 핵심: 항상 렌더하고 open prop으로만 토글 */}
       <AiModeModal
+        key={aiModalOpen ? "ai-open" : "ai-closed"}  // HMR/상태 꼬임 방지
         open={aiModalOpen}
-        onClose={() => setAiModalOpen(false)}
-        onConfirm={handleConfirmAI}
+        onClose={closeAiModal}
+        initial={aiInitial}
       />
     </div>
   );
