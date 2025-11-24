@@ -1,0 +1,19 @@
+.ai-results-page { padding: 24px; max-width: 1000px; margin: 0 auto; }
+.pref-box {
+  background: #fff8f0; border: 1px solid #ffd8ac; border-radius: 12px;
+  padding: 12px 14px; margin-bottom: 14px; font-size: 14px; line-height: 1.6;
+}
+.result-list {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+}
+.result-card {
+  background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,.06);
+  padding: 12px; text-align: center;
+}
+.result-card img { width: 100%; height: 160px; object-fit: cover; border-radius: 8px; }
+.result-card h3 { margin: 8px 0 10px; font-size: 16px; }
+.result-card .detail {
+  width: 100%; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer;
+  background: linear-gradient(135deg, #4ca8ff, #1d82e8); color: #fff; font-weight: 700;
+}

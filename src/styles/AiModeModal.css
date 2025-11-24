@@ -1,0 +1,51 @@
+.ai-modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.45);
+  display: flex; align-items: center; justify-content: center; z-index: 1200;
+}
+.ai-modal {
+  width: min(720px, 92vw); max-height: 88vh; overflow: auto;
+  background: #fff; border-radius: 16px; padding: 20px 22px; position: relative;
+  box-shadow: 0 12px 30px rgba(0,0,0,.18);
+  font-family: "Pretendard","Noto Sans KR",sans-serif;
+}
+.ai-close {
+  position: absolute; top: 10px; right: 14px; border: 0; background: transparent; font-size: 20px; cursor: pointer;
+}
+.ai-modal h2 { margin: 0 0 10px; font-size: 20px; }
+.ai-modal section { margin-top: 14px; }
+.ai-modal h3 { font-size: 14px; margin: 8px 0; color: #333; }
+
+.btn-grid {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.pick {
+  padding: 8px 12px; border-radius: 999px; border: 1px solid #ddd; background: #fafafa;
+  cursor: pointer; font-size: 13px;
+}
+.pick.on {
+  background: #ffe8d1; border-color: #ffb26b; color: #a45300;
+}
+
+.extra-row { display: flex; gap: 8px; margin-top: 8px; }
+.extra-row input {
+  flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 8px 10px; font-size: 13px;
+}
+.extra-row .sub {
+  border: 1px solid #ff9a3d; background: #fff; color: #ff9a3d; border-radius: 8px; padding: 8px 12px; cursor: pointer;
+}
+
+.pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.pill {
+  background: #fff4e8; color: #c55f00; border: 1px solid #ffd7b0;
+  padding: 6px 10px; border-radius: 999px; font-size: 12px; cursor: pointer;
+}
+
+.ai-modal textarea {
+  width: 100%; min-height: 70px; border: 1px solid #ddd; border-radius: 10px; padding: 10px; resize: vertical;
+}
+
+.ai-actions { display: flex; justify-content: flex-end; margin-top: 12px; }
+.ai-actions .go {
+  background: linear-gradient(135deg, #4ca8ff, #1d82e8); color: #fff; border: none;
+  border-radius: 10px; padding: 10px 16px; font-weight: 700; cursor: pointer;
+}

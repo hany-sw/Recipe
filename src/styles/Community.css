@@ -1,9 +1,5 @@
-* {
-  box-sizing: border-box;
-}
-
 .community-page {
-  max-width: 700px;
+  max-width: 600px;
   margin: 60px auto;
   text-align: center;
   font-family: "Pretendard", sans-serif;
@@ -12,36 +8,22 @@
 }
 
 h1 {
-  font-size: 26px;
-  font-weight: 700;
+  font-size: 15px; /* 작게 조정 */
+  font-weight: 500;
   color: #333;
-  margin-bottom: 40px;
+  margin-bottom: 30px;
 }
 
-/* 💬 등록된 글이 없습니다 (둥근 말풍선) */
+/* 💬 등록된 글 없음 → 말풍선 제거 */
 .empty-bubble {
-  display: inline-block;
-  background: rgba(255, 255, 255, 0.3);
-  border: 3px solid #ffffff;
-  border-radius: 50px;
-  padding: 25px 40px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #000000; /* ✅ 검정색 텍스트로 변경 */
-  position: relative;
-  backdrop-filter: blur(6px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-.empty-bubble::after {
-  content: "";
-  position: absolute;
-  bottom: -14px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 14px 12px 0;
-  border-style: solid;
-  border-color: #ffffff transparent transparent transparent;
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 10px;
+  font-size: 16px;
+  font-weight: 400;
+  color: #777;
+  text-align: center;
 }
 
 /* 게시글 리스트 */
@@ -59,11 +41,77 @@ h1 {
   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
-/* ✏️ 플로팅 버튼 (오른쪽 하단) */
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.post-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-btn,
+.delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  transition: transform 0.2s;
+}
+
+.edit-btn:hover {
+  color: #ff8b3d;
+  transform: scale(1.1);
+}
+
+.delete-btn:hover {
+  color: #ff4d4d;
+  transform: scale(1.1);
+}
+
+.post-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #777;
+  margin-top: 5px;
+}
+
+/* 내가 쓴 글 보기 상단 배너 */
+.my-posts-banner {
+  background: #fff4e8;
+  color: #333;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.my-posts-banner button {
+  background: none;
+  border: none;
+  color: #ff8b3d;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.my-posts-banner button:hover {
+  color: #ff6a00;
+  text-decoration: underline;
+}
+
+/* 플로팅 버튼 */
 .floating-container {
   position: fixed;
   bottom: 30px;
-  right: 30px; /* ✅ 오른쪽 하단으로 이동 */
+  right: 30px;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -91,7 +139,6 @@ h1 {
   transform: scale(1.05);
 }
 
-/* 플로팅 메뉴 */
 .floating-menu {
   display: flex;
   flex-direction: column;
@@ -121,7 +168,7 @@ h1 {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* 모달 (글쓰기 창) */
+/* 모달 */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -182,110 +229,4 @@ h1 {
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.98); }
   to { opacity: 1; transform: scale(1); }
-}
-
-/* 📱 모바일 대응 */
-@media screen and (max-width: 480px) {
-  h1 {
-    font-size: 22px;
-  }
-
-  .empty-bubble {
-    font-size: 16px;
-    padding: 20px 28px;
-  }
-
-  .floating-btn {
-    width: 55px;
-    height: 55px;
-    font-size: 26px;
-  }
-}
-.post-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.post-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.edit-btn,
-.delete-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 18px;
-  transition: transform 0.2s;
-}
-
-.edit-btn:hover {
-  color: #ff8b3d;
-  transform: scale(1.1);
-}
-
-.delete-btn:hover {
-  color: #ff4d4d;
-  transform: scale(1.1);
-}
-
-.post-info {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-  color: #777;
-  margin-top: 5px;
-}
-/* 내가 쓴 글 보기 상단 배너 */
-.my-posts-banner {
-  background: #fff4e8;
-  color: #333;
-  padding: 12px 16px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-  font-size: 15px;
-  font-weight: 500;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.my-posts-banner button {
-  background: none;
-  border: none;
-  color: #ff8b3d;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.my-posts-banner button:hover {
-  color: #ff6a00;
-  text-decoration: underline;
-}
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  width: 90%;
-  max-width: 400px;
-  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.3);
-  text-align: center;
-  position: relative;
-  z-index: 1001; /* ✅ 오버레이보다 위에 있어야 함 */
 }

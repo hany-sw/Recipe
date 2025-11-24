@@ -18,7 +18,6 @@ export default function SearchResult() {
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const [ratings, setRatings] = useState({});
-  const [isAIMode, setIsAIMode] = useState(() => localStorage.getItem("isAIMode") === "true");
 
   // ✅ 즐겨찾기 초기 불러오기
   useEffect(() => {
@@ -113,39 +112,14 @@ export default function SearchResult() {
     if (!keyword) return;
     setLoading(true);
     try {
-      let res;
-      if (isAIMode) {
-        res = await axios.get(`${BASE_URL}/recipes/recommend/ai`, {
-          params: { ingredients: keyword },
-          headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
-        });
-        const aiResults = res.data?.recommendations || [];
-        const details = await Promise.all(
-          aiResults.map(async (foodName) => {
-            try {
-              const detail = await axios.get(`${BASE_URL}/recipes/recommend/ai/detail`, {
-                params: { foodName },
-                headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
-              });
-              return detail.data;
-            } catch {
-              return { title: foodName, imageUrl: "", ingredients: "", description: "" };
-            }
-          })
-        );
-        setRecipes(details);
-        details.forEach((r) => {
-          const id = r.recipeId || r.userRecipeId;
-          if (id) fetchRating(id, r.recipeId ? "PUBLIC" : "USER");
-        });
-      } else {
-        res = await axios.get(`${BASE_URL}/recipes/search`, { params: { ingredients: keyword } });
-        setRecipes(res.data || []);
-        res.data?.forEach((r) => {
-          const id = r.recipeId || r.userRecipeId;
-          if (id) fetchRating(id, r.recipeId ? "PUBLIC" : "USER");
-        });
-      }
+      const res = await axios.get(`${BASE_URL}/recipes/search`, {
+        params: { ingredients: keyword },
+      });
+      setRecipes(res.data || []);
+      res.data?.forEach((r) => {
+        const id = r.recipeId || r.userRecipeId;
+        if (id) fetchRating(id, r.recipeId ? "PUBLIC" : "USER");
+      });
     } catch (error) {
       console.error("검색 오류:", error);
       alert("검색 중 오류가 발생했습니다.");
@@ -156,7 +130,7 @@ export default function SearchResult() {
 
   useEffect(() => {
     if (ingredient) fetchRecipes(ingredient);
-  }, [ingredient, isAIMode]);
+  }, [ingredient]);
 
   const handleSearch = () => {
     if (!query.trim()) return alert("재료를 입력해주세요!");
@@ -177,20 +151,6 @@ export default function SearchResult() {
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           />
           <button onClick={handleSearch}>검색</button>
-        </div>
-        <div className="ai-toggle">
-          <label>
-            <input
-              type="checkbox"
-              checked={isAIMode}
-              onChange={() => {
-                const newMode = !isAIMode;
-                setIsAIMode(newMode);
-                localStorage.setItem("isAIMode", newMode);
-              }}
-            />
-            🤖 AI 모드
-          </label>
         </div>
       </div>
 

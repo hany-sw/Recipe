@@ -163,3 +163,43 @@ body {
   margin-top: 0;
   padding-top: 0;
 }
+/* AI 모드 모달 */
+.ai-modal .field { margin: 10px 0 14px; text-align:left; }
+.ai-modal .field label { display:block; font-weight:600; margin-bottom:8px; }
+.chip-row { display:flex; flex-wrap:wrap; gap:8px; }
+.chip {
+  border:1px solid #ddd; background:#fff; border-radius:999px;
+  padding:6px 12px; cursor:pointer; font-size:14px;
+}
+.chip.on { border-color:#ff8b3d; background:#fff6ee; color:#ff7a1c; }
+.ingredient-input {
+  width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:8px;
+}
+.start-ai-btn {
+  width:100%; margin-top:10px; padding:10px 12px; border:none;
+  border-radius:8px; background:linear-gradient(135deg,#4ca8ff,#1d82e8);
+  color:#fff; font-weight:700; cursor:pointer;
+}
+.start-ai-btn:hover { filter:brightness(0.95); }
+.modal-content.ai h2 { margin-bottom: 8px; }
+.ai-row { margin: 10px 0 14px; }
+.ai-row h4 { margin: 0 0 8px; font-size: 14px; color:#444; }
+
+.chip {
+  display:inline-block; margin:4px 6px 0 0; padding:6px 10px;
+  border-radius:16px; border:1px solid #ddd; background:#fff; cursor:pointer; font-size:13px;
+}
+.chip.active { background:#ffe9d6; border-color:#ffb974; }
+
+.allergy-add { display:flex; gap:6px; margin-top:8px; }
+.allergy-add input { flex:1; padding:8px; border:1px solid #ddd; border-radius:8px; }
+.allergy-add .mini { padding:6px 10px; border-radius:8px; border:1px solid #ddd; background:#fff; cursor:pointer; }
+
+.tagline { margin-top:6px; font-size:12px; color:#555; }
+.tag { display:inline-block; margin:4px 6px 0 0; padding:3px 8px; background:#f3f3f3; border-radius:12px; }
+
+.ai-actions { display:flex; justify-content:flex-end; margin-top:14px; }
+.start-ai-btn {
+  background: linear-gradient(135deg, #4ca8ff, #1d82e8);
+  color:#fff; border:none; border-radius:8px; padding:10px 14px; cursor:pointer; font-weight:600;
+}
