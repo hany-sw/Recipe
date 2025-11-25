@@ -1,20 +1,20 @@
-// src/pages/AiResults.jsx
 import { useLocation, useNavigate } from "react-router-dom";
-import { useMemo } from "react";
+import { useMemo, useState, useCallback } from "react";
 import "../styles/AiResults.css";
 
 export default function AiResults() {
   const { state } = useLocation();
   const navigate = useNavigate();
 
-  // 넘어온 결과 구조: A) { results, options/raw }  B) { recommendations: { recommendations | items }, preferences }
+  // --- 원본 결과 안전 파싱 ---
   const resultsRaw =
-    (state && state.results) ||
-    (state && state.recommendations && (state.recommendations.recommendations || state.recommendations.items)) ||
+    state?.results ??
+    state?.recommendations?.recommendations ??
+    state?.recommendations?.items ??
     [];
 
-  // 문자열 배열이면 객체로 변환
-  const baseItems = useMemo(() => {
+  // 문자열 배열 → {title}로 변환, 객체는 그대로
+  const items = useMemo(() => {
     if (!Array.isArray(resultsRaw)) return [];
     if (resultsRaw.length === 0) return [];
     if (typeof resultsRaw[0] === "string") {
@@ -23,24 +23,17 @@ export default function AiResults() {
     return resultsRaw;
   }, [resultsRaw]);
 
-  // 선택 옵션
-  const prefs = (state && (state.options || state.preferences)) || {};
-  const foodPreference = (() => {
-    if (typeof prefs.foodPreference === "string" && prefs.foodPreference.trim()) {
-      return prefs.foodPreference.trim();
-    }
-    if (Array.isArray(prefs.categories) && prefs.categories[0]) {
-      return String(prefs.categories[0]);
-    }
-    return "";
-  })();
-
+  // 사용자 선택 옵션(상단 요약용)
+  const prefs = state?.options || state?.preferences || {};
+  const foodPreference =
+    (typeof prefs.foodPreference === "string" && prefs.foodPreference.trim()) ||
+    (Array.isArray(prefs.categories) ? prefs.categories[0] : "") ||
+    "";
   const allergies = Array.isArray(prefs.allergies)
     ? prefs.allergies
     : prefs.allergies
     ? [prefs.allergies]
     : [];
-
   const difficulty = prefs.difficulty || "-";
   const mealTime =
     prefs.mealTime ||
@@ -51,82 +44,43 @@ export default function AiResults() {
     : prefs.weather || "-";
   const ingredientsSel = prefs.ingredients || "-";
 
-  // 필터/재랭킹 키워드
-  const FOOD_PREF_KEYWORDS = {
-    "한식": ["김치","된장","고추장","비빔","불고기","나물","전","찌개","국","잡채","갈비","비빔밥","떡볶이","김밥"],
-    "중식": ["짬뽕","짜장","멘보샤","마파두부","훠궈","우육면","깐풍","탕수육","라조기","춘권","차우면"],
-    "양식": ["파스타","리조또","스테이크","피자","그라탱","크림","버터","치즈","샐러드","수프","오븐","그릴"],
-    "동남아": ["팟타이","나시고렝","똠얌꿍","쌀국수","반미","그린커리","사테","누억맘"],
-    "비건": [],
-    "그 외": [],
-  };
+  // 텍스트 합치기 도우미
+  const toText = (v) => (typeof v === "string" ? v : "");
+  const pickTitle = (it) =>
+    it.title || it.foodName || it.name || it.baseRecipeName || "추천 요리";
+  const pickIngredients = (it) =>
+    it.ingredients || it.RCP_PARTS_DTLS || it.materials || "";
+  const pickReason = (it) =>
+    // 백엔드가 이유를 제공하면 최우선 사용
+    it.reason ||
+    it.recommendationReason ||
+    it.reasonText ||
+    // 없으면 간단한 규칙으로 생성
+    (() => {
+      const parts = [];
+      if (foodPreference) parts.push(`${foodPreference} 취향 반영`);
+      if (difficulty && difficulty !== "-") parts.push(`난이도 ${difficulty}`);
+      if (Array.isArray(allergies) && allergies.length) parts.push(`알러지 제외`);
+      if (mealTime && mealTime !== "-") parts.push(`${mealTime}용`);
+      if (weather && weather !== "-") parts.push(`${weather} 날씨 추천`);
+      return parts.length ? parts.join(" · ") : "선택 조건을 반영한 추천";
+    })();
 
-  const NON_VEGAN = ["소고기","돼지고기","닭고기","베이컨","햄","참치","연어","고등어","멸치","계란","달걀","치즈","버터","우유","크림","어간장"];
-
-  const ALLERGEN_KEYWORDS = {
-    "계란": ["계란","달걀","난백","마요네즈","에그"],
-    "우유": ["우유","치즈","버터","크림","유청","요거트","연유"],
-    "대두": ["대두","콩","두부","간장","된장","청국장","두유"],
-    "밀": ["밀","밀가루","글루텐","빵","파스타","누들"],
-    "갑각류": ["새우","대하","게","랍스터","크랩"],
-    "견과류": ["땅콩","아몬드","호두","캐슈","피스타치오","잣","헤이즐넛"],
-  };
-
-  const toText = (v) => (v ? String(v).toLowerCase() : "");
-  const hasAny = (hay, keys) => keys.some((k) => toText(hay).includes(toText(k)));
-
-  const pickText = (it) => {
-    const title = it.title || it.foodName || it.name || "";
-    const ing =
-      it.ingredients ||
-      it.ingredient ||
-      it.materials ||
-      it.desc ||
-      it.description ||
-      "";
-    return `${title}\n${ing}`;
-  };
-
-  const violatesVegan = (it) => foodPreference === "비건" && hasAny(pickText(it), NON_VEGAN);
-  const violatesAllergy = (it) => {
-    const hay = pickText(it);
-    return allergies.some((a) => hasAny(hay, (ALLERGEN_KEYWORDS[a] || [a])));
-  };
-
-  const preferenceScore = (it) => {
-    if (!foodPreference || !FOOD_PREF_KEYWORDS[foodPreference] || FOOD_PREF_KEYWORDS[foodPreference].length === 0) {
-      return 0;
-    }
-    return FOOD_PREF_KEYWORDS[foodPreference].reduce(
-      (acc, k) => acc + (hasAny(pickText(it), [k]) ? 1 : 0),
-      0
-    );
-  };
-
-  // 필터 + 재랭킹
-  const filteredSorted = useMemo(() => {
-    let rows = Array.isArray(baseItems) ? [...baseItems] : [];
-
-    rows = rows.filter((r) => !violatesVegan(r) && !violatesAllergy(r));
-
-    rows = rows
-      .map((r, i) => ({ ...r, _score: preferenceScore(r), _idx: i }))
-      .sort((a, b) => {
-        if (b._score !== a._score) return b._score - a._score;
-        return a._idx - b._idx;
-      })
-      .map(({ _score, _idx, ...rest }) => rest);
-
-    if (rows.length === 0) {
-      rows = baseItems.filter((r) => !violatesVegan(r) && !violatesAllergy(r));
-    }
-    return rows;
-  }, [baseItems, foodPreference, allergies]);
+  // 펼침/접힘 제어 (여러 카드 동시 펼침 가능)
+  const [openSet, setOpenSet] = useState(() => new Set());
+  const toggleOpen = useCallback((idx) => {
+    setOpenSet((prev) => {
+      const next = new Set(prev);
+      next.has(idx) ? next.delete(idx) : next.add(idx);
+      return next;
+    });
+  }, []);
 
   return (
     <div className="ai-results-page">
       <h1>🤖 AI 추천 결과</h1>
 
+      {/* 선택 옵션 요약 */}
       <div className="pref-box">
         <div><b>선호:</b> {foodPreference || "-"}</div>
         <div><b>알러지:</b> {allergies.length ? allergies.join(", ") : "-"}</div>
@@ -136,30 +90,64 @@ export default function AiResults() {
         <div><b>재료:</b> {ingredientsSel}</div>
       </div>
 
-      <div className="result-list">
-        {filteredSorted.length === 0 ? (
+      {/* 결과 리스트 (사진/초기 상세보기 버튼 제거) */}
+      <div className="ai-compact-list">
+        {items.length === 0 ? (
           <div>
             <p>추천 결과가 없습니다.</p>
-            {state && state.raw && (
+            {state?.raw && (
               <pre style={{ textAlign: "left", whiteSpace: "pre-wrap" }}>
                 {JSON.stringify(state.raw, null, 2)}
               </pre>
             )}
           </div>
         ) : (
-          filteredSorted.map((it, idx) => {
-            const title = it.title || it.foodName || it.name || `추천 ${idx + 1}`;
-            const img = it.imageUrl || it.image || "/no-image.png";
+          items.map((it, idx) => {
+            const title = pickTitle(it);
+            const reason = toText(pickReason(it));
+            const ings = toText(pickIngredients(it));
+            const isOpen = openSet.has(idx);
+
             return (
-              <div key={`${title}-${idx}`} className="result-card">
-                <img src={img} alt={title} />
-                <h3>{title}</h3>
-                <button
-                  className="detail"
-                  onClick={() => navigate("/recipe/details", { state: { title, aiMode: true } })}
-                >
-                  상세보기
-                </button>
+              <div
+                key={`${title}-${idx}`}
+                className={`ai-compact-card ${isOpen ? "open" : ""}`}
+                onClick={() => toggleOpen(idx)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => (e.key === "Enter" ? toggleOpen(idx) : null)}
+              >
+                <div className="row-top">
+                  <h3 className="title">{title}</h3>
+                  <span className="chev">{isOpen ? "▲" : "▼"}</span>
+                </div>
+
+                <p className="reason">{reason}</p>
+
+                {isOpen && (
+                  <div className="expand">
+                    {ings ? (
+                      <>
+                        <div className="ing-label">들어가는 재료</div>
+                        <div className="ing-text">{ings}</div>
+                      </>
+                    ) : (
+                      <div className="ing-text muted">재료 정보 없음</div>
+                    )}
+
+                    <button
+                      className="detail"
+                      onClick={(e) => {
+                        e.stopPropagation(); // 카드 토글 방지
+                        navigate("/recipe/details", {
+                          state: { title, aiMode: true },
+                        });
+                      }}
+                    >
+                      상세보기
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })

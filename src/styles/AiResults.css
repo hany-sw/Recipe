@@ -17,3 +17,101 @@
   width: 100%; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer;
   background: linear-gradient(135deg, #4ca8ff, #1d82e8); color: #fff; font-weight: 700;
 }
+/* 결과 카드: 사진 없이 컴팩트 버전 */
+.ai-compact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.ai-compact-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease;
+  border: 1px solid #f2f2f2;
+}
+.ai-compact-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.08);
+}
+
+.ai-compact-card .row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.ai-compact-card .title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #222;
+}
+.ai-compact-card .chev {
+  font-size: 12px;
+  color: #888;
+}
+
+.ai-compact-card .reason {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.ai-compact-card .expand {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed #eee;
+}
+
+.ai-compact-card .ing-label {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 6px;
+}
+.ai-compact-card .ing-text {
+  font-size: 14px;
+  color: #333;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.5;
+}
+.ai-compact-card .muted {
+  color: #999;
+}
+
+.ai-compact-card .detail {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #2f80ed, #56ccf2);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+.ai-compact-card .detail:hover {
+  filter: brightness(0.95);
+}
+
+/* 상단 요약 박스 기존 스타일이 없으면 기본 제공 */
+.pref-box {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+  background: #fff;
+  border: 1px solid #f2f2f2;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: #333;
+}
+@media (min-width: 720px) {
+  .pref-box { grid-template-columns: repeat(3, 1fr); }
+}
