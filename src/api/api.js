@@ -87,36 +87,47 @@ export const removeFavorite = (recipeId) => instance.delete(`/favorites/${recipe
  *  Ratings
  * ====================== */
 export const getMyRatings = () => instance.get("/rating/my");
+export const getTop10 = () => instance.get("/rating/top10");
 
 /* ======================
  *  Recipes (기존 검색/상세 등 필요시)
  * ====================== */
-export const getRecipeById = (id) => instance.get(`/recipe/${id}`);
+export const getRecipeById = (id) => instance.get(`/recipes/${id}`);
 
-/* ======================
- *  AI 모드 (백엔드 /api/ai 에 맞춤)
- * ====================== */
-// 1) 세션 시작 (선호/제약/재료를 한 번에 보낼 수도 있고, 비워도 됨)
-export const aiStart = (payload = {}) => instance.post("/ai/start", payload);
+// ...상단 공통 axios 인스턴스는 그대로...
 
-// 2) 알러지 추가 (여러 개면 여러 번 호출)
+// === AI 모드 ===
+// 세션 시작: 바디 없이 호출
+export const aiStart = () => instance.post("/ai/start");
+
+// 선호음식: preference (foodPreference 아님!)
+export const aiSetFoodPreference = (sessionId, preference) =>
+  instance.post(`/ai/preference`, null, { params: { sessionId, preference } });
+
+// 알러지
 export const aiSetAllergy = (sessionId, allergy) =>
   instance.post(`/ai/allergy`, null, { params: { sessionId, allergy } });
 
-// 3) 난이도 지정
+// 난이도
 export const aiSetDifficulty = (sessionId, difficulty) =>
   instance.post(`/ai/difficulty`, null, { params: { sessionId, difficulty } });
 
-// 4) 재료 입력 → 추천 리턴(RecipeRecommendationResponse)
+// 끼니: mealtime (경로 주의)
+export const aiSetMealTime = (sessionId, mealTime) =>
+  instance.post(`/ai/mealtime`, null, { params: { sessionId, mealTime } });
+
+// 날씨
+export const aiSetWeather = (sessionId, weather) =>
+  instance.post(`/ai/weather`, null, { params: { sessionId, weather } });
+
+// 재료 -> 추천
 export const aiSetIngredientsAndRecommend = (sessionId, ingredients) =>
   instance.post(`/ai/ingredients`, null, { params: { sessionId, ingredients } });
 
-// 5) 추천된 음식 상세
+// 상세
 export const aiRecipeDetailByName = (foodName) =>
   instance.get(`/ai/recipe/detail`, { params: { foodName } });
 
-// (원샷 기존 방식 필요시 유지)
-export const aiRecommendOneShot = (ingredients) =>
-  instance.get("/ai/recommend", { params: { ingredients } });
+
 
 export default instance;

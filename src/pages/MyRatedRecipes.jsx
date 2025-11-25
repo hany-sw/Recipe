@@ -13,33 +13,58 @@ export default function MyRatedRecipes() {
 
   // ✅ 내가 준 평점 목록 불러오기
   const fetchMyRatings = async () => {
+    setLoading(true);
     try {
-      const res = await getMyRatings();
-      const ratings = res.data || [];
+      const res = await getMyRatings(); // /rating/my (인증 필수)
+      const ratings = Array.isArray(res.data) ? res.data : [];
 
       // 각 평점의 recipeId로 상세정보 불러오기 (이미지 포함)
-      const detailed = await Promise.all(
+      const settled = await Promise.allSettled(
         ratings.map(async (r) => {
+          // 백엔드 상세: 공공 레시피는 /recipe/{id}로 가정 (단수 'recipe')
+          // 사용자 레시피 엔드포인트가 다르면 여기서 분기해 주세요.
+          const detailUrl = `${BASE_URL}/recipe/${r.recipeId}`;
+
           try {
-            const detail = await axios.get(`${BASE_URL}/recipes/${r.recipeId}`);
+            const detail = await axios.get(detailUrl);
+            const d = detail.data || {};
             return {
               ratingId: r.ratingId,
               recipeId: r.recipeId,
-              recipeName: r.recipeName,
+              recipeName: r.recipeName || d.title || d.name || `레시피 ${r.recipeId}`,
               ratingScore: r.ratingScore,
               createdAt: r.createdAt,
-              imageUrl: detail.data.imageUrl || "/no-image.png",
-              ingredients: detail.data.ingredients || "",
-              description: detail.data.description || "",
+              imageUrl: d.imageUrl || "/no-image.png",
+              ingredients: d.ingredients || "",
+              description: d.description || "",
             };
           } catch {
-            return { ...r, imageUrl: "/no-image.png" };
+            // 상세 못 불러와도 카드 자체는 보여주기
+            return {
+              ratingId: r.ratingId,
+              recipeId: r.recipeId,
+              recipeName: r.recipeName || `레시피 ${r.recipeId}`,
+              ratingScore: r.ratingScore,
+              createdAt: r.createdAt,
+              imageUrl: "/no-image.png",
+              ingredients: "",
+              description: "",
+            };
           }
         })
       );
+
+      const detailed = settled
+        .filter((s) => s.status === "fulfilled")
+        .map((s) => s.value);
+
       setRatedRecipes(detailed);
     } catch (err) {
       console.error("⭐ 내가 준 평점 불러오기 실패:", err);
+      // 토큰 만료/미로그인 대비
+      if (err?.response?.status === 401) {
+        alert("로그인이 필요합니다.");
+      }
     } finally {
       setLoading(false);
     }
@@ -47,6 +72,7 @@ export default function MyRatedRecipes() {
 
   useEffect(() => {
     fetchMyRatings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ✅ 평점 수정
@@ -59,7 +85,7 @@ export default function MyRatedRecipes() {
         `${BASE_URL}/rating/update`,
         {
           recipeId: rating.recipeId,
-          recipeType: "PUBLIC", // ⚠️ USER 타입일 경우 수정 필요
+          recipeType: "PUBLIC", // ⚠️ USER 타입이면 백엔드 규칙에 맞게 수정
           ratingScore: parseFloat(newScore),
         },
         {
@@ -77,10 +103,10 @@ export default function MyRatedRecipes() {
   };
 
   // ✅ 평점 삭제
-  const handleDeleteRating = async (ratingID) => {
+  const handleDeleteRating = async (ratingId) => {
     if (!window.confirm("이 평점을 삭제하시겠습니까?")) return;
     try {
-      await axios.delete(`${BASE_URL}/rating/delete/${ratingID}`, {
+      await axios.delete(`${BASE_URL}/rating/delete/${ratingId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
@@ -130,7 +156,7 @@ export default function MyRatedRecipes() {
                     className="delete-btn"
                     onClick={() => handleDeleteRating(item.ratingId)}
                   >
-                    🗑️ 
+                    🗑️
                   </button>
 
                   <button

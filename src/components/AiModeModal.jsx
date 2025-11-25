@@ -2,14 +2,16 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   aiStart,
+  aiSetFoodPreference,
   aiSetAllergy,
   aiSetDifficulty,
+  aiSetMealTime,
+  aiSetWeather,
   aiSetIngredientsAndRecommend,
 } from "../api/api";
 import "../styles/MainPage.css";
 
 export default function AiModeModal({ open, onClose, initial }) {
-  // 🔒 훅은 항상 같은 순서로 실행 (open 여부와 무관하게 컴포넌트는 항상 렌더됨)
   const navigate = useNavigate();
 
   const safeInitial = useMemo(
@@ -29,7 +31,6 @@ export default function AiModeModal({ open, onClose, initial }) {
   const [allergyInput, setAllergyInput] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // open이 꺼졌다 켜질 때마다 초기화하고 싶다면:
   useEffect(() => {
     if (open) {
       setPrefs(safeInitial);
@@ -69,35 +70,36 @@ export default function AiModeModal({ open, onClose, initial }) {
       alert("재료를 입력해주세요!");
       return;
     }
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
+    if (!localStorage.getItem("accessToken")) {
       alert("로그인이 필요합니다.");
       return;
     }
 
     setLoading(true);
     try {
-      // 1) 세션 시작
-      const startRes = await aiStart({
-        foodPreference: prefs.foodPreference || "",
-        allergy: prefs.allergies[0] || "",
-        difficulty: prefs.difficulty || "",
-        mealTime: prefs.mealTime || "",
-        weather: prefs.weather || "",
-        ingredients: "", // 재료는 아래 단계에서 보냄
-      });
+      // 1) 세션 시작 (바디 없이)
+      const startRes = await aiStart();
       const sessionId = startRes.data?.sessionId;
       if (!sessionId) throw new Error("세션 ID를 받지 못했습니다.");
 
-      // 2) 알러지 전체 반영
-      for (const a of prefs.allergies) {
-        await aiSetAllergy(sessionId, a);
-      }
+      // 2) 선호/시간/날씨/알러지/난이도 반영 (경로+파라미터 이름 주의)
+      if (prefs.foodPreference)
+        await aiSetFoodPreference(sessionId, prefs.foodPreference);
 
-      // 3) 난이도
-      if (prefs.difficulty) await aiSetDifficulty(sessionId, prefs.difficulty);
+      if (prefs.mealTime)
+        await aiSetMealTime(sessionId, prefs.mealTime);
 
-      // 4) 재료 입력 → 추천
+      if (prefs.weather)
+        await aiSetWeather(sessionId, prefs.weather);
+
+      if (prefs.allergies.length > 0) {
+        await aiSetAllergy(sessionId, prefs.allergies); // 여러 개 한방에
+          }
+
+      if (prefs.difficulty)
+        await aiSetDifficulty(sessionId, prefs.difficulty);
+
+      // 3) 재료 입력 → 추천
       const recRes = await aiSetIngredientsAndRecommend(sessionId, prefs.ingredients);
       const payload = recRes.data || {};
       const results =
@@ -130,10 +132,7 @@ export default function AiModeModal({ open, onClose, initial }) {
     }
   }, [navigate, onClose, prefs]);
 
-  // 표시만 제어
-  if (!open) {
-    return <div style={{ display: "none" }} aria-hidden="true" />;
-  }
+  if (!open) return <div style={{ display: "none" }} aria-hidden="true" />;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -141,7 +140,7 @@ export default function AiModeModal({ open, onClose, initial }) {
         <button className="close-btn" onClick={onClose}>✖</button>
         <h2>🤖 AI 추천 모드</h2>
 
-        {/* 1) 선호 음식 (단일) */}
+        {/* 선호 음식 (단일) */}
         <section className="ai-row">
           <h4>선호 음식</h4>
           {["한식","양식","중식","비건","동남아","그 외"].map((c) => (
@@ -155,7 +154,7 @@ export default function AiModeModal({ open, onClose, initial }) {
           ))}
         </section>
 
-        {/* 2) 알러지(다중 + 기타) */}
+        {/* 알러지 (다중 + 기타) */}
         <section className="ai-row">
           <h4>알러지(다중)</h4>
           {["우유","계란","대두","밀","갑각류","견과류"].map((a) => (
@@ -182,7 +181,7 @@ export default function AiModeModal({ open, onClose, initial }) {
           )}
         </section>
 
-        {/* 3) 난이도 */}
+        {/* 난이도 */}
         <section className="ai-row">
           <h4>난이도</h4>
           {["쉬움","보통","어려움"].map((d) => (
@@ -196,7 +195,7 @@ export default function AiModeModal({ open, onClose, initial }) {
           ))}
         </section>
 
-        {/* 4) 끼니 */}
+        {/* 끼니 */}
         <section className="ai-row">
           <h4>끼니</h4>
           {["아침","점심","저녁","그 외"].map((m) => (
@@ -210,7 +209,7 @@ export default function AiModeModal({ open, onClose, initial }) {
           ))}
         </section>
 
-        {/* 5) 날씨 */}
+        {/* 날씨 */}
         <section className="ai-row">
           <h4>오늘의 날씨</h4>
           {["맑음","흐림","비","추움","더움"].map((w) => (
@@ -224,7 +223,7 @@ export default function AiModeModal({ open, onClose, initial }) {
           ))}
         </section>
 
-        {/* 6) 재료 */}
+        {/* 재료 */}
         <section className="ai-row">
           <h4>재료</h4>
           <input
