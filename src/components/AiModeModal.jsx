@@ -191,7 +191,7 @@ export default function AiModeModal({ open, onClose, initial }) {
             <section className="ai-row ai-center">
               <h4 className="ai-question">안녕하세요! 오늘 어떤 음식을 드시고 싶으신가요?</h4>
               <div className="choice-grid">
-                {["한식","양식","중식","비건","동남아","그 외"].map((c) => (
+                {["한식","양식","중식","일식","동남아","그 외"].map((c) => (
                   <button
                     key={c}
                     className={chip(prefs.foodPreference === c)}

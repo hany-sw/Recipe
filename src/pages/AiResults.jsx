@@ -1,19 +1,19 @@
+// src/pages/AiResults.jsx
 import { useLocation, useNavigate } from "react-router-dom";
 import { useMemo, useState, useCallback } from "react";
+import { aiRecipeDetailByName } from "../api/api";   // ✅ 추가
 import "../styles/AiResults.css";
 
 export default function AiResults() {
   const { state } = useLocation();
   const navigate = useNavigate();
 
-  // --- 원본 결과 안전 파싱 ---
   const resultsRaw =
     state?.results ??
     state?.recommendations?.recommendations ??
     state?.recommendations?.items ??
     [];
 
-  // 문자열 배열 → {title}로 변환, 객체는 그대로
   const items = useMemo(() => {
     if (!Array.isArray(resultsRaw)) return [];
     if (resultsRaw.length === 0) return [];
@@ -23,7 +23,6 @@ export default function AiResults() {
     return resultsRaw;
   }, [resultsRaw]);
 
-  // 사용자 선택 옵션(상단 요약용)
   const prefs = state?.options || state?.preferences || {};
   const foodPreference =
     (typeof prefs.foodPreference === "string" && prefs.foodPreference.trim()) ||
@@ -44,18 +43,16 @@ export default function AiResults() {
     : prefs.weather || "-";
   const ingredientsSel = prefs.ingredients || "-";
 
-  // 텍스트 합치기 도우미
   const toText = (v) => (typeof v === "string" ? v : "");
   const pickTitle = (it) =>
     it.title || it.foodName || it.name || it.baseRecipeName || "추천 요리";
   const pickIngredients = (it) =>
     it.ingredients || it.RCP_PARTS_DTLS || it.materials || "";
+
   const pickReason = (it) =>
-    // 백엔드가 이유를 제공하면 최우선 사용
     it.reason ||
     it.recommendationReason ||
     it.reasonText ||
-    // 없으면 간단한 규칙으로 생성
     (() => {
       const parts = [];
       if (foodPreference) parts.push(`${foodPreference} 취향 반영`);
@@ -66,21 +63,48 @@ export default function AiResults() {
       return parts.length ? parts.join(" · ") : "선택 조건을 반영한 추천";
     })();
 
-  // 펼침/접힘 제어 (여러 카드 동시 펼침 가능)
+  // ✅ 펼침/접힘 + 상세 캐시
   const [openSet, setOpenSet] = useState(() => new Set());
-  const toggleOpen = useCallback((idx) => {
-    setOpenSet((prev) => {
-      const next = new Set(prev);
-      next.has(idx) ? next.delete(idx) : next.add(idx);
-      return next;
-    });
-  }, []);
+  const [detailMap, setDetailMap] = useState({}); // { [title]: { ingredients, description, imageUrl, ... } }
+  const [loadingIdx, setLoadingIdx] = useState(null);
+
+  const fetchDetailIfNeeded = useCallback(async (title, idx) => {
+    if (!title || detailMap[title]) return;
+    try {
+      setLoadingIdx(idx);
+      const res = await aiRecipeDetailByName(title);
+      const data = res?.data || {};
+      setDetailMap((m) => ({ ...m, [title]: data }));
+    } catch (e) {
+      // 콘솔만 찍고 UI는 조용히 유지
+      console.warn("상세 불러오기 실패:", e);
+    } finally {
+      setLoadingIdx(null);
+    }
+  }, [detailMap]);
+
+  const toggleOpen = useCallback(
+    async (idx) => {
+      const it = items[idx];
+      const title = pickTitle(it);
+      const next = new Set(openSet);
+      if (next.has(idx)) {
+        next.delete(idx);
+        setOpenSet(next);
+      } else {
+        next.add(idx);
+        setOpenSet(next);
+        // ✅ 펼칠 때 상세 비동기 로딩
+        await fetchDetailIfNeeded(title, idx);
+      }
+    },
+    [items, openSet, fetchDetailIfNeeded]
+  );
 
   return (
     <div className="ai-results-page">
       <h1>🤖 AI 추천 결과</h1>
 
-      {/* 선택 옵션 요약 */}
       <div className="pref-box">
         <div><b>선호:</b> {foodPreference || "-"}</div>
         <div><b>알러지:</b> {allergies.length ? allergies.join(", ") : "-"}</div>
@@ -90,7 +114,6 @@ export default function AiResults() {
         <div><b>재료:</b> {ingredientsSel}</div>
       </div>
 
-      {/* 결과 리스트 (사진/초기 상세보기 버튼 제거) */}
       <div className="ai-compact-list">
         {items.length === 0 ? (
           <div>
@@ -105,8 +128,12 @@ export default function AiResults() {
           items.map((it, idx) => {
             const title = pickTitle(it);
             const reason = toText(pickReason(it));
-            const ings = toText(pickIngredients(it));
             const isOpen = openSet.has(idx);
+
+            // ✅ 상세가 있으면 상세 재료 우선 사용
+            const detailed = detailMap[title] || {};
+            const ings =
+              toText(detailed.ingredients) || toText(pickIngredients(it));
 
             return (
               <div
@@ -126,7 +153,9 @@ export default function AiResults() {
 
                 {isOpen && (
                   <div className="expand">
-                    {ings ? (
+                    {loadingIdx === idx ? (
+                      <div className="ing-text muted">재료 불러오는 중…</div>
+                    ) : ings ? (
                       <>
                         <div className="ing-label">들어가는 재료</div>
                         <div className="ing-text">{ings}</div>
@@ -138,7 +167,7 @@ export default function AiResults() {
                     <button
                       className="detail"
                       onClick={(e) => {
-                        e.stopPropagation(); // 카드 토글 방지
+                        e.stopPropagation();
                         navigate("/recipe/details", {
                           state: { title, aiMode: true },
                         });
