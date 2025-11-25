@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef, useLayoutEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   aiStart,
@@ -29,22 +29,59 @@ export default function AiModeModal({ open, onClose, initial }) {
 
   const [prefs, setPrefs] = useState(safeInitial);
   const [allergyInput, setAllergyInput] = useState("");
+  const [step, setStep] = useState(0); // 0~5 질문, 6 로딩
   const [loading, setLoading] = useState(false);
+
+  // ---- 자동 높이 애니메이션 ----
+  const containerRef = useRef(null);
+  const contentRef = useRef(null);
+  const [containerHeight, setContainerHeight] = useState("auto");
 
   useEffect(() => {
     if (open) {
       setPrefs(safeInitial);
       setAllergyInput("");
+      setStep(0);
+      setLoading(false);
     }
   }, [open, safeInitial]);
 
-  const setSingle = useCallback(
-    (key, value) => setPrefs((p) => ({ ...p, [key]: value })),
-    []
-  );
+  useLayoutEffect(() => {
+    if (!open) return;
+    const el = contentRef.current;
+    if (!el) return;
+
+    const apply = () => {
+      const next = el.offsetHeight;
+      // “답답하지 않게” 보기 좋은 최소/최대 높이로 클램프
+      const clamped = Math.max(420, Math.min(next, 720));
+      setContainerHeight(clamped);
+    };
+
+    apply();
+    let ro;
+    if ("ResizeObserver" in window) {
+      ro = new ResizeObserver(apply);
+      ro.observe(el);
+    } else {
+      const id = setInterval(apply, 200);
+      return () => clearInterval(id);
+    }
+    return () => ro && ro.disconnect();
+  }, [open, step, prefs.allergies.length, loading]);
+
+  const chip = (active) => `chip ${active ? "active" : ""}`;
+  const next = () => setStep((s) => s + 1);
+  const prev = () => setStep((s) => Math.max(0, s - 1));
+
+  const setSingle = useCallback((key, value, autoNext = true) => {
+    setPrefs((p) => ({ ...p, [key]: value }));
+    if (autoNext) next();
+  }, []);
 
   const toggleAllergy = useCallback((value) => {
     setPrefs((prev) => {
+      if (value === "없음") return { ...prev, allergies: [] };
       const arr = prev.allergies ?? [];
       return arr.includes(value)
         ? { ...prev, allergies: arr.filter((v) => v !== value) }
@@ -56,14 +93,10 @@ export default function AiModeModal({ open, onClose, initial }) {
     const v = allergyInput.trim();
     if (!v) return;
     setPrefs((prev) =>
-      prev.allergies.includes(v)
-        ? prev
-        : { ...prev, allergies: [...prev.allergies, v] }
+      prev.allergies.includes(v) ? prev : { ...prev, allergies: [...prev.allergies, v] }
     );
     setAllergyInput("");
   }, [allergyInput]);
-
-  const chip = useCallback((active) => `chip ${active ? "active" : ""}`, []);
 
   const runAI = useCallback(async () => {
     if (!prefs.ingredients.trim()) {
@@ -76,30 +109,22 @@ export default function AiModeModal({ open, onClose, initial }) {
     }
 
     setLoading(true);
+    setStep(6); // 로딩 화면
+
     try {
-      // 1) 세션 시작 (바디 없이)
       const startRes = await aiStart();
       const sessionId = startRes.data?.sessionId;
       if (!sessionId) throw new Error("세션 ID를 받지 못했습니다.");
 
-      // 2) 선호/시간/날씨/알러지/난이도 반영 (경로+파라미터 이름 주의)
-      if (prefs.foodPreference)
-        await aiSetFoodPreference(sessionId, prefs.foodPreference);
+      if (prefs.foodPreference) await aiSetFoodPreference(sessionId, prefs.foodPreference);
+      if (prefs.mealTime) await aiSetMealTime(sessionId, prefs.mealTime);
+      if (prefs.weather) await aiSetWeather(sessionId, prefs.weather);
+      if (prefs.difficulty) await aiSetDifficulty(sessionId, prefs.difficulty);
 
-      if (prefs.mealTime)
-        await aiSetMealTime(sessionId, prefs.mealTime);
+      if (Array.isArray(prefs.allergies) && prefs.allergies.length > 0) {
+        for (const a of prefs.allergies) await aiSetAllergy(sessionId, a);
+      }
 
-      if (prefs.weather)
-        await aiSetWeather(sessionId, prefs.weather);
-
-      if (prefs.allergies.length > 0) {
-        await aiSetAllergy(sessionId, prefs.allergies); // 여러 개 한방에
-          }
-
-      if (prefs.difficulty)
-        await aiSetDifficulty(sessionId, prefs.difficulty);
-
-      // 3) 재료 입력 → 추천
       const recRes = await aiSetIngredientsAndRecommend(sessionId, prefs.ingredients);
       const payload = recRes.data || {};
       const results =
@@ -127,6 +152,7 @@ export default function AiModeModal({ open, onClose, initial }) {
     } catch (err) {
       console.error("AI 추천 실패:", err);
       alert(err.response?.data || err.message || "AI 추천 중 오류가 발생했습니다.");
+      setStep(5); // 입력 화면으로 복귀
     } finally {
       setLoading(false);
     }
@@ -134,110 +160,190 @@ export default function AiModeModal({ open, onClose, initial }) {
 
   if (!open) return <div style={{ display: "none" }} aria-hidden="true" />;
 
+  // 💡 “전체 모달보다 약간 작게 + 넉넉한 여백 + 가운데 정렬”
+  const containerStyle = {
+    width: "min(720px, 92vw)",
+    minWidth: 380,
+    maxWidth: 720,
+    height: typeof containerHeight === "number" ? `${containerHeight}px` : containerHeight,
+    maxHeight: 720,
+    transition: "height 260ms ease",
+    overflow: "hidden",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center", // 세로 가운데
+    alignItems: "center",     // 가로 가운데
+    padding: "24px 20px 28px", // 넉넉한 내부 여백
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content ai" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content ai" onClick={(e) => e.stopPropagation()} style={containerStyle} ref={containerRef}>
         <button className="close-btn" onClick={onClose}>✖</button>
-        <h2>🤖 AI 추천 모드</h2>
 
-        {/* 선호 음식 (단일) */}
-        <section className="ai-row">
-          <h4>선호 음식</h4>
-          {["한식","양식","중식","비건","동남아","그 외"].map((c) => (
-            <button
-              key={c}
-              className={chip(prefs.foodPreference === c)}
-              onClick={() => setSingle("foodPreference", c)}
-            >
-              {c}
-            </button>
-          ))}
-        </section>
+        <div ref={contentRef} className="ai-content">
+          {/* 제목 */}
+          {step <= 5 && <h2 className="ai-title">🤖 AI 추천 모드</h2>}
+          {step === 6 && <h2 className="ai-title">🤖 AI가 레시피를 찾는 중…</h2>}
 
-        {/* 알러지 (다중 + 기타) */}
-        <section className="ai-row">
-          <h4>알러지(다중)</h4>
-          {["우유","계란","대두","밀","갑각류","견과류"].map((a) => (
-            <button
-              key={a}
-              className={chip(prefs.allergies.includes(a))}
-              onClick={() => toggleAllergy(a)}
-            >
-              {a}
-            </button>
-          ))}
-          <div className="allergy-add">
-            <input
-              placeholder="기타 알러지 입력"
-              value={allergyInput}
-              onChange={(e) => setAllergyInput(e.target.value)}
-            />
-            <button className="mini" onClick={addCustomAllergy}>추가</button>
-          </div>
-          {prefs.allergies.length > 0 && (
-            <div className="tagline">
-              선택됨: {prefs.allergies.map((t) => <span key={t} className="tag">{t}</span>)}
-            </div>
+          {/* 0) 선호 음식 */}
+          {step === 0 && (
+            <section className="ai-row ai-center">
+              <h4 className="ai-question">안녕하세요! 오늘 어떤 음식을 드시고 싶으신가요?</h4>
+              <div className="choice-grid">
+                {["한식","양식","중식","비건","동남아","그 외"].map((c) => (
+                  <button
+                    key={c}
+                    className={chip(prefs.foodPreference === c)}
+                    onClick={() => setSingle("foodPreference", c)}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </section>
           )}
-        </section>
 
-        {/* 난이도 */}
-        <section className="ai-row">
-          <h4>난이도</h4>
-          {["쉬움","보통","어려움"].map((d) => (
-            <button
-              key={d}
-              className={chip(prefs.difficulty === d)}
-              onClick={() => setSingle("difficulty", d)}
-            >
-              {d}
-            </button>
-          ))}
-        </section>
+          {/* 1) 알러지 */}
+          {step === 1 && (
+            <section className="ai-row ai-center">
+              <h4 className="ai-question">알러지는 있으신가요?</h4>
+              <div className="choice-grid">
+                {["우유","계란","대두","밀","갑각류","견과류","없음"].map((a) => (
+                  <button
+                    key={a}
+                    className={chip(prefs.allergies.includes(a))}
+                    onClick={() => toggleAllergy(a)}
+                  >
+                    {a}
+                  </button>
+                ))}
+              </div>
+              <div className="allergy-add">
+                <input
+                  placeholder="기타 알러지 입력"
+                  value={allergyInput}
+                  onChange={(e) => setAllergyInput(e.target.value)}
+                />
+                <button className="mini" onClick={addCustomAllergy}>추가</button>
+              </div>
+              {prefs.allergies.length > 0 && (
+                <div className="tagline">
+                  선택됨: {prefs.allergies.map((t) => <span key={t} className="tag">{t}</span>)}
+                </div>
+              )}
+              <div className="ai-actions row">
+                <button onClick={prev}>이전</button>
+                <button className="start-ai-btn" onClick={next}>다음</button>
+              </div>
+            </section>
+          )}
 
-        {/* 끼니 */}
-        <section className="ai-row">
-          <h4>끼니</h4>
-          {["아침","점심","저녁","그 외"].map((m) => (
-            <button
-              key={m}
-              className={chip(prefs.mealTime === m)}
-              onClick={() => setSingle("mealTime", m)}
-            >
-              {m}
-            </button>
-          ))}
-        </section>
+          {/* 2) 난이도 */}
+          {step === 2 && (
+            <section className="ai-row ai-center">
+              <h4 className="ai-question">요리 난이도는 어떤 걸 원하시나요?</h4>
+              <div className="choice-grid">
+                {["쉬움","보통","어려움","상관없음"].map((d) => (
+                  <button
+                    key={d}
+                    className={chip(prefs.difficulty === d)}
+                    onClick={() => setSingle("difficulty", d)}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+              <div className="ai-actions row">
+                <button onClick={prev}>이전</button>
+                <button className="start-ai-btn" onClick={next}>다음</button>
+              </div>
+            </section>
+          )}
 
-        {/* 날씨 */}
-        <section className="ai-row">
-          <h4>오늘의 날씨</h4>
-          {["맑음","흐림","비","추움","더움"].map((w) => (
-            <button
-              key={w}
-              className={chip(prefs.weather === w)}
-              onClick={() => setSingle("weather", w)}
-            >
-              {w}
-            </button>
-          ))}
-        </section>
+          {/* 3) 끼니 */}
+          {step === 3 && (
+            <section className="ai-row ai-center">
+              <h4 className="ai-question">식사 시간대는 언제인가요?</h4>
+              <div className="choice-grid">
+                {["아침","점심","저녁","간식","그 외"].map((m) => (
+                  <button
+                    key={m}
+                    className={chip(prefs.mealTime === m)}
+                    onClick={() => setSingle("mealTime", m)}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+              <div className="ai-actions row">
+                <button onClick={prev}>이전</button>
+                <button className="start-ai-btn" onClick={next}>다음</button>
+              </div>
+            </section>
+          )}
 
-        {/* 재료 */}
-        <section className="ai-row">
-          <h4>재료</h4>
-          <input
-            placeholder="예) 달걀, 대파, 베이컨"
-            value={prefs.ingredients}
-            onChange={(e) => setPrefs((p) => ({ ...p, ingredients: e.target.value }))}
-          />
-        </section>
+          {/* 4) 날씨 */}
+          {step === 4 && (
+            <section className="ai-row ai-center">
+              <h4 className="ai-question">오늘 날씨는 어떤가요?</h4>
+              <div className="choice-grid">
+                {["맑음","흐림","비","추움","더움","그 외"].map((w) => (
+                  <button
+                    key={w}
+                    className={chip(prefs.weather === w)}
+                    onClick={() => setSingle("weather", w)}
+                  >
+                    {w}
+                  </button>
+                ))}
+              </div>
+              <div className="ai-actions row">
+                <button onClick={prev}>이전</button>
+                <button className="start-ai-btn" onClick={next}>다음</button>
+              </div>
+            </section>
+          )}
 
-        <div className="ai-actions">
-          <button className="start-ai-btn" onClick={runAI} disabled={loading}>
-            {loading ? "추천 중..." : "확인 → 추천 받기"}
-          </button>
+          {/* 5) 재료 입력 */}
+          {step === 5 && (
+            <section className="ai-row ai-center">
+              <h4 className="ai-question">가지고 있는 재료를 입력해주세요 (예: 달걀, 감자, 치킨)</h4>
+              <input
+                className="ai-input"
+                placeholder="예) 달걀, 대파, 베이컨"
+                value={prefs.ingredients}
+                onChange={(e) => setPrefs((p) => ({ ...p, ingredients: e.target.value }))}
+              />
+              <div className="ai-actions row">
+                <button onClick={prev}>이전</button>
+                <button className="start-ai-btn" onClick={runAI} disabled={loading}>
+                  {loading ? "추천 중..." : "확인 → 추천 받기"}
+                </button>
+              </div>
+            </section>
+          )}
+
+          {/* 6) 로딩 */}
+          {step === 6 && (
+            <section className="ai-row ai-center">
+              <div className="spinner" />
+              <div className="ai-loading-text">AI: 감사합니다! 조건에 맞는 추천 요리를 찾고 있어요...</div>
+            </section>
+          )}
         </div>
+
+        <style>{`
+          .spinner {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            border: 3px solid #e0e0e0;
+            border-top-color: #7c5cff;
+            animation: spin 0.9s linear infinite;
+            margin-bottom: 10px;
+          }
+          @keyframes spin { to { transform: rotate(360deg); } }
+        `}</style>
       </div>
     </div>
   );
