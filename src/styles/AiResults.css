@@ -115,3 +115,16 @@
 @media (min-width: 720px) {
   .pref-box { grid-template-columns: repeat(3, 1fr); }
 }
+.ai-title {
+  font-size: 28px;        /* 큰 제목 */
+  font-weight: 800;
+  color: #222;            /* 검정색 유지 */
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-title-icon {
+  font-size: 30px;
+}

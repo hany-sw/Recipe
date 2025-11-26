@@ -34,7 +34,7 @@ export default function RecipeDetail() {
     const nameTokens = [];
     for (const t of tokens) {
       if (/\d/.test(t)) break;
-      if (/^(g|kg|mg|ml|l|컵|큰술|작은술|티스푼|스푼|마리|개|장|조금|줌|tbsp|tsp)$/i.test(t)) break;
+      if (/^(g|kg|mg|ml|l|컵|큰술|작은술|티스푼|스푼|마리|개|장|조금|줌|적당량|tbsp|tsp)$/i.test(t)) break;
       nameTokens.push(t);
     }
     const name = nameTokens.join(" ").trim();
