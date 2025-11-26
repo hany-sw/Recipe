@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { getProfile } from "../api/api";
+import PostDetail from "./PostDetail";   // ⭐ 반드시 import!
 
 import "../styles/common.css";
 import "../styles/Community.css";
@@ -8,6 +9,7 @@ import "../styles/Community.css";
 export default function MyPosts() {
   const [myPosts, setMyPosts] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
+  const [selectedPost, setSelectedPost] = useState(null);   // ⭐ 모달용 상태 추가
 
   const BASE_URL = "http://210.110.33.220:8183/api";
 
@@ -32,7 +34,7 @@ export default function MyPosts() {
       try {
         const res = await axios.get(`${BASE_URL}/board`);
 
-        // 🔥 백엔드가 반환하는 DTO는 user 없음 → username만 존재함
+        // 백엔드 DTO → username 기반 필터링
         const filtered = res.data.filter(
           (post) => post.username === currentUser.username
         );
@@ -48,6 +50,7 @@ export default function MyPosts() {
 
   return (
     <div className="page-container">
+
       {/* ⭐ 통일된 제목 */}
       <h2 className="page-title">
         <span className="page-title-icon">✏️</span>
@@ -59,7 +62,11 @@ export default function MyPosts() {
       ) : (
         <div className="post-list">
           {myPosts.map((post) => (
-            <div key={post.boardId} className="post">
+            <div
+              key={post.boardId}
+              className="post"
+              onClick={() => setSelectedPost(post)}   // ⭐ 게시글 클릭 → 모달 열기
+            >
               <div className="post-header">
                 <h3>{post.title}</h3>
               </div>
@@ -73,6 +80,14 @@ export default function MyPosts() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* ⭐ 게시글 상세 모달 */}
+      {selectedPost && (
+        <PostDetail
+          post={selectedPost}
+          onClose={() => setSelectedPost(null)}
+        />
       )}
     </div>
   );
