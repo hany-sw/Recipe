@@ -7,6 +7,7 @@ import SignupPage from "./pages/SignupPage";
 import MyPage from "./pages/MyPage";
 import MyRatedRecipes from "./pages/MyRatedRecipes";
 import MyPosts from "./pages/MyPosts";
+import MyComments from "./pages/MyComments";
 import RecipeUpload from "./pages/RecipeUpload";
 import FavoritePage from "./pages/FavoritePage";
 import SearchResult from "./pages/SearchResult.jsx";
@@ -26,6 +27,7 @@ function App() {
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/my-ratings" element={<MyRatedRecipes />} />
           <Route path="/my-posts" element={<MyPosts />} />
+          <Route path="/my-comments" element={<MyComments />} />
           <Route path="/favorite" element={<FavoritePage />} />
           <Route path="/search" element={<SearchResult />} />
           <Route path="/recipe-upload" element={<RecipeUpload />} />

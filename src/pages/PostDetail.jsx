@@ -1,15 +1,18 @@
+// src/pages/PostDetail.jsx
 import { useState, useEffect } from "react";
 import axios from "axios";
 import "../styles/PostDetail.css";
 
 export default function PostDetail({ post, onClose }) {
-  const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState("");
   const BASE_URL = "http://210.110.33.220:8183/api";
 
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
+
+  /* ------------------- 댓글 불러오기 ------------------- */
   const fetchComments = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/board/${post.boardId}/comments`);
+      const res = await axios.get(`${BASE_URL}/comment/${post.boardId}`);
       setComments(res.data || []);
     } catch (err) {
       console.error("댓글 불러오기 실패:", err);
@@ -20,15 +23,22 @@ export default function PostDetail({ post, onClose }) {
     fetchComments();
   }, [post.boardId]);
 
+  /* ------------------- 댓글 작성 ------------------- */
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
+
     try {
       await axios.post(
-        `${BASE_URL}/board/${post.boardId}/comments`,
-        { content: newComment },
-        { headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` } }
+        `${BASE_URL}/comment/${post.boardId}`,
+        { content: newComment, parentId: null },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
       );
+
       setNewComment("");
       fetchComments();
     } catch (err) {
@@ -36,23 +46,80 @@ export default function PostDetail({ post, onClose }) {
     }
   };
 
+  /* ------------------- 댓글 삭제 ------------------- */
+  const deleteComment = async (commentId) => {
+    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+
+    try {
+      await axios.delete(`${BASE_URL}/comment/${commentId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+
+      fetchComments();
+    } catch (err) {
+      console.error("댓글 삭제 실패:", err);
+      alert("삭제 중 오류가 발생했습니다.");
+    }
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="close-btn" onClick={onClose}>✖</button>
+        <button className="close-btn" onClick={onClose}>
+          ✖
+        </button>
+
         <h2>{post.title}</h2>
-        <p className="author">{post.user?.username || "익명"} · {new Date(post.createdAt).toLocaleString()}</p>
+        <p className="author">
+          {post.username || "알 수 없음"} ·{" "}
+          {new Date(post.createdAt).toLocaleString()}
+        </p>
+
         <p className="content">{post.content}</p>
         <hr />
 
+        {/* ------------------- 댓글 구역 ------------------- */}
         <h3>💬 댓글</h3>
+
         <div className="comment-list">
           {comments.length > 0 ? (
             comments.map((c) => (
               <div key={c.commentId} className="comment">
-                <strong>{c.user?.username || "익명"}</strong>
-                <p>{c.content}</p>
-                <span>{new Date(c.createdAt).toLocaleString()}</span>
+                <div className="comment-header">
+                  <strong>{c.username}</strong>
+                  <span>{new Date(c.createdAt).toLocaleString()}</span>
+                </div>
+
+                <p className="comment-content">{c.content}</p>
+
+                {/* 삭제 버튼 */}
+                <button
+                  className="comment-delete-btn"
+                  onClick={() => deleteComment(c.commentId)}
+                >
+                  삭제
+                </button>
+
+                {/* 대댓글 렌더링 */}
+                {c.replies?.length > 0 &&
+                  c.replies.map((r) => (
+                    <div key={r.commentId} className="reply">
+                      <strong>{r.username}</strong>
+                      <p>{r.content}</p>
+                      <span>
+                        {new Date(r.createdAt).toLocaleString()}
+                      </span>
+
+                      <button
+                        className="comment-delete-btn"
+                        onClick={() => deleteComment(r.commentId)}
+                      >
+                        삭제
+                      </button>
+                    </div>
+                  ))}
               </div>
             ))
           ) : (
@@ -60,6 +127,7 @@ export default function PostDetail({ post, onClose }) {
           )}
         </div>
 
+        {/* 댓글 작성창 */}
         <form className="comment-form" onSubmit={handleSubmit}>
           <input
             type="text"
