@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getMyRatings } from "../api/api";
 import "../styles/MyRatedRecipes.css";
-import "../styles/common.css";   // ⭐ 공통 스타일 추가
+import "../styles/common.css";
 
 export default function MyRatedRecipes() {
   const [ratedRecipes, setRatedRecipes] = useState([]);
@@ -14,7 +14,7 @@ export default function MyRatedRecipes() {
 
   const BASE_URL = "http://210.110.33.220:8183/api";
 
-  // ⭐ 내가 준 평점 목록 + 상세 이미지 불러오기
+  // ⭐ 내가 준 평점 + 상세 이미지 불러오기
   const fetchMyRatings = async () => {
     setLoading(true);
     try {
@@ -42,11 +42,8 @@ export default function MyRatedRecipes() {
                 d.imageUrl ||
                 d.ATT_FILE_NO_MAIN ||
                 "https://via.placeholder.com/200x150?text=No+Image",
-              ingredients: d.ingredients || "",
-              description: d.description || "",
             };
-          } catch (err) {
-            console.error("상세 불러오기 실패:", err);
+          } catch {
             return {
               ratingId: r.ratingId,
               recipeId: r.recipeId,
@@ -60,16 +57,11 @@ export default function MyRatedRecipes() {
         })
       );
 
-      const detailed = settled
-        .filter((s) => s.status === "fulfilled")
-        .map((s) => s.value);
-
-      setRatedRecipes(detailed);
-    } catch (err) {
-      console.error("⭐ 내가 준 평점 불러오기 실패:", err);
-      if (err?.response?.status === 401) {
-        alert("로그인이 필요합니다.");
-      }
+      setRatedRecipes(
+        settled.filter((s) => s.status === "fulfilled").map((s) => s.value)
+      );
+    } catch {
+      alert("평점을 불러오지 못했습니다.");
     } finally {
       setLoading(false);
     }
@@ -83,7 +75,6 @@ export default function MyRatedRecipes() {
   const handleUpdateRating = async (rating) => {
     const newScore = prompt("새 평점을 입력하세요 (1~5):", rating.ratingScore);
     if (!newScore) return;
-
     try {
       await axios.put(
         `${BASE_URL}/rating/update`,
@@ -100,9 +91,8 @@ export default function MyRatedRecipes() {
       );
       alert("평점이 수정되었습니다.");
       fetchMyRatings();
-    } catch (err) {
-      console.error("평점 수정 실패:", err);
-      alert("수정 실패 ❌");
+    } catch {
+      alert("수정 실패");
     }
   };
 
@@ -117,15 +107,13 @@ export default function MyRatedRecipes() {
 
       alert("삭제되었습니다.");
       fetchMyRatings();
-    } catch (err) {
-      console.error("평점 삭제 실패:", err);
-      alert("삭제 실패 ❌");
+    } catch {
+      alert("삭제 실패");
     }
   };
 
   return (
     <div className="page-container my-rated-page">
-      {/* ⭐ 공통 제목 디자인 적용 */}
       <h2 className="page-title">
         <span className="page-title-icon">⭐</span>
         내가 준 평점 레시피
@@ -150,35 +138,35 @@ export default function MyRatedRecipes() {
               <img
                 src={item.imageUrl}
                 alt={item.recipeName}
-                className="thumb"
               />
 
               <div className="favorite-info">
                 <h3>{item.recipeName}</h3>
-                <p>⭐ 평점: {item.ratingScore ?? "-"}</p>
+                <p>⭐ 평점: {item.ratingScore}</p>
                 <p>🕒 {new Date(item.createdAt).toLocaleString()}</p>
 
-                <div className="button-group">
-                  <button
-                    className="edit-btn"
+                <div className="icon-row">
+                  <span
+                    className="icon edit-icon"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleUpdateRating(item);
                     }}
-                  >
-                    ✏️
-                  </button>
+                   >
+                      ✏️
+                    </span>
 
-                  <button
-                    className="delete-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteRating(item.ratingId);
-                    }}
-                  >
-                    🗑️
-                  </button>
-                </div>
+                    <span
+                      className="icon delete-icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteRating(item.ratingId);
+                      }}
+                    >
+                      🗑️
+                    </span>
+                  </div>
+
               </div>
             </div>
           ))}
