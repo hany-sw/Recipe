@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { getProfile } from "../api/api";
 import instance from "../api/api";
+
+import "../styles/common.css";        // ⭐ 공통 제목/레이아웃 적용
 import "../styles/RecipeUpload.css";
 
 export default function RecipeUpload() {
@@ -8,7 +10,8 @@ export default function RecipeUpload() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [selectedRecipe, setSelectedRecipe] = useState(null); // ✅ 상세보기용 추가
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+
   const [recipe, setRecipe] = useState({
     name: "",
     description: "",
@@ -16,6 +19,7 @@ export default function RecipeUpload() {
     ingredients: "",
     baseRecipeName: "",
   });
+
   const [myRecipes, setMyRecipes] = useState([]);
 
   // ✅ 로그인 사용자 불러오기
@@ -37,9 +41,7 @@ export default function RecipeUpload() {
     if (!user) return;
     try {
       const res = await instance.get(`/recipes/my`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
+        headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
       });
       setMyRecipes(res.data);
     } catch (err) {
@@ -72,16 +74,12 @@ export default function RecipeUpload() {
     try {
       if (isEditMode) {
         await instance.put(`/recipes/${editingId}`, payload, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
+          headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
         });
         alert("레시피가 수정되었습니다!");
       } else {
         await instance.post(`/recipes/user`, payload, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
+          headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
         });
         alert("레시피가 등록되었습니다!");
       }
@@ -94,7 +92,7 @@ export default function RecipeUpload() {
     }
   };
 
-  // ✅ 수정
+  // 수정 모드
   const handleEdit = (r) => {
     setIsModalOpen(true);
     setIsEditMode(true);
@@ -108,14 +106,12 @@ export default function RecipeUpload() {
     });
   };
 
-  // ✅ 삭제
+  // 삭제
   const handleDelete = async (id) => {
     if (window.confirm("정말 삭제하시겠습니까?")) {
       try {
         await instance.delete(`/recipes/${id}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
+          headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
         });
         alert("삭제되었습니다!");
         loadUserRecipes();
@@ -126,7 +122,7 @@ export default function RecipeUpload() {
     }
   };
 
-  // ✅ 폼 리셋
+  // 폼 리셋
   const resetForm = () => {
     setIsModalOpen(false);
     setIsEditMode(false);
@@ -141,8 +137,13 @@ export default function RecipeUpload() {
   };
 
   return (
-    <div className="empty-state">
-      <h1>나만의 레시피 관리</h1>
+    <div className="page-container">
+      
+      {/* ⭐ 공통 상단 타이틀 적용 */}
+      <h2 className="page-title">
+        <span className="page-title-icon">🍳</span>
+        나만의 레시피 관리
+      </h2>
 
       {/* 플로팅 버튼 */}
       <button className="add-btn" onClick={() => setIsModalOpen(true)}>
@@ -153,9 +154,7 @@ export default function RecipeUpload() {
       {isModalOpen && (
         <div className="modal-overlay" onClick={resetForm}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="close-modal-btn" onClick={resetForm}>
-              ✖
-            </button>
+            <button className="close-modal-btn" onClick={resetForm}>✖</button>
             <h2>{isEditMode ? "레시피 수정" : "나만의 레시피 등록"}</h2>
 
             <form className="upload-form" onSubmit={handleSubmit}>
@@ -214,7 +213,7 @@ export default function RecipeUpload() {
         </div>
       )}
 
-      {/* 등록된 레시피 목록 */}
+      {/* 레시피 목록 */}
       <div className="my-recipe-list">
         {myRecipes.length === 0 ? (
           <p className="empty">등록된 레시피가 없습니다</p>
@@ -224,11 +223,12 @@ export default function RecipeUpload() {
               <div
                 key={r.userRecipeId}
                 className="recipe-card"
-                onClick={() => setSelectedRecipe(r)} // ✅ 클릭 시 상세보기 모달 열기
+                onClick={() => setSelectedRecipe(r)}
               >
                 {r.imageUrl && <img src={r.imageUrl} alt={r.name} />}
                 <h3>{r.name}</h3>
                 <p>{r.description.slice(0, 50)}...</p>
+
                 <div className="edit-btns">
                   <button
                     className="edit-btn"
@@ -239,6 +239,7 @@ export default function RecipeUpload() {
                   >
                     ✏️ 수정
                   </button>
+
                   <button
                     className="delete-btn"
                     onClick={(e) => {
@@ -255,23 +256,19 @@ export default function RecipeUpload() {
         )}
       </div>
 
-      {/* ✅ 상세보기 모달 */}
+      {/* 상세보기 모달 */}
       {selectedRecipe && (
-        <div
-          className="modal-overlay"
-          onClick={() => setSelectedRecipe(null)}
-        >
-          <div
-            className="modal-content"
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="modal-overlay" onClick={() => setSelectedRecipe(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button
               className="close-modal-btn"
               onClick={() => setSelectedRecipe(null)}
             >
               ✖
             </button>
+
             <h2>{selectedRecipe.name}</h2>
+
             {selectedRecipe.imageUrl && (
               <img
                 src={selectedRecipe.imageUrl}
@@ -279,8 +276,10 @@ export default function RecipeUpload() {
                 className="detail-image"
               />
             )}
+
             <p><strong>🧂 재료:</strong> {selectedRecipe.ingredients || "정보 없음"}</p>
             <p><strong>🍳 설명:</strong> {selectedRecipe.description}</p>
+
             {selectedRecipe.baseRecipeName && (
               <p><strong>📖 참고:</strong> {selectedRecipe.baseRecipeName}</p>
             )}

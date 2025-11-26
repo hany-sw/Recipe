@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getMyRatings } from "../api/api";
 import "../styles/MyRatedRecipes.css";
+import "../styles/common.css";   // ⭐ 공통 스타일 추가
 
 export default function MyRatedRecipes() {
   const [ratedRecipes, setRatedRecipes] = useState([]);
@@ -20,13 +21,11 @@ export default function MyRatedRecipes() {
       const res = await getMyRatings();
       const ratings = Array.isArray(res.data) ? res.data : [];
 
-      // 상세 정보 병렬 요청
       const settled = await Promise.allSettled(
         ratings.map(async (r) => {
           const title = r.recipeName;
 
           try {
-            // 🔥 RecipeDetail API 활용 (제목 기반)
             const detail = await axios.get(
               `${BASE_URL}/recipes/details/${encodeURIComponent(title)}`
             );
@@ -48,14 +47,14 @@ export default function MyRatedRecipes() {
             };
           } catch (err) {
             console.error("상세 불러오기 실패:", err);
-            // 상세 정보 실패해도 카드 자체는 표시
             return {
               ratingId: r.ratingId,
               recipeId: r.recipeId,
               recipeName: title,
               ratingScore: r.ratingScore,
               createdAt: r.createdAt,
-              imageUrl: "https://via.placeholder.com/200x150?text=No+Image",
+              imageUrl:
+                "https://via.placeholder.com/200x150?text=No+Image",
             };
           }
         })
@@ -125,8 +124,12 @@ export default function MyRatedRecipes() {
   };
 
   return (
-    <div className="my-rated-page">
-      <h2>⭐ 내가 준 평점 레시피</h2>
+    <div className="page-container my-rated-page">
+      {/* ⭐ 공통 제목 디자인 적용 */}
+      <h2 className="page-title">
+        <span className="page-title-icon">⭐</span>
+        내가 준 평점 레시피
+      </h2>
 
       {loading ? (
         <p>불러오는 중...</p>
@@ -140,7 +143,7 @@ export default function MyRatedRecipes() {
               className="favorite-card"
               onClick={() =>
                 navigate("/recipe/details", {
-                  state: { title: item.recipeName }, // 🔥 핵심: 제목으로 상세보기 이동
+                  state: { title: item.recipeName },
                 })
               }
             >
@@ -159,7 +162,7 @@ export default function MyRatedRecipes() {
                   <button
                     className="edit-btn"
                     onClick={(e) => {
-                      e.stopPropagation(); // 카드 클릭 차단
+                      e.stopPropagation();
                       handleUpdateRating(item);
                     }}
                   >

@@ -1,0 +1,23 @@
+/* 🔸 모든 페이지 공통 컨테이너 */
+.page-container {
+  width: 100%;
+  padding: 26px 22px;
+  box-sizing: border-box;
+}
+
+/* 🔸 페이지 제목 공통 스타일 */
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ff8a3d;  /* 주황색 통일 */
+  margin-bottom: 18px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 🔸 이모지 아이콘 스타일 */
+.page-title-icon {
+  font-size: 26px;
+}

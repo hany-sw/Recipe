@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { getProfile } from "../api/api";
-import "../styles/Community.css";
+
+import "../styles/common.css";     // ⭐ 공통 스타일
+import "../styles/Community.css";  // 게시물 카드 스타일 유지
 
 export default function MyPosts() {
   const [myPosts, setMyPosts] = useState([]);
@@ -45,9 +47,13 @@ export default function MyPosts() {
   }, [currentUser]);
 
   return (
-    <div className="empty-state">
-      <h1>내가 쓴 글</h1>
-        
+    <div className="page-container">
+      
+      {/* ⭐ 공통 상단 제목 영역 */}
+      <h2 className="page-title">
+        <span className="page-title-icon">✏️</span>
+        내가 쓴 글
+      </h2>
 
       {myPosts.length === 0 ? (
         <p className="empty">작성한 게시물이 없습니다</p>
@@ -58,7 +64,9 @@ export default function MyPosts() {
               <div className="post-header">
                 <h3>{post.title}</h3>
               </div>
+
               <p className="post-content">{post.content}</p>
+
               <div className="post-info">
                 <span className="post-date">
                   {new Date(post.createdAt).toLocaleString()}

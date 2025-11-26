@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getFavorites, removeFavorite } from "../api/api";
+
+import "../styles/common.css";        // ⭐ 공통 스타일 추가
 import "../styles/FavoritePage.css";
 
 export default function FavoritePage() {
@@ -17,7 +19,7 @@ export default function FavoritePage() {
         const res = await getFavorites();
         const data = res.data || [];
 
-        // ✅ recipeId별로 상세정보 추가 조회
+        // 🔹 recipeId로 상세정보 불러와 enrich
         const enriched = await Promise.all(
           data.map(async (fav) => {
             try {
@@ -34,6 +36,7 @@ export default function FavoritePage() {
         console.error("즐겨찾기 불러오기 실패:", err);
       }
     };
+
     fetchFavorites();
   }, []);
 
@@ -48,8 +51,13 @@ export default function FavoritePage() {
   };
 
   return (
-    <div className="favorite-page">
-      <h1>즐겨찾기한 레시피</h1>
+    <div className="page-container"> {/* ⭐ 공통 레이아웃 */}
+
+      {/* ⭐ 상단 제목 통일 */}
+      <h2 className="page-title">
+        <span className="page-title-icon">❤️</span>
+        즐겨찾기한 레시피
+      </h2>
 
       {favorites.length === 0 ? (
         <p className="empty">즐겨찾기한 레시피가 없습니다</p>
@@ -57,6 +65,7 @@ export default function FavoritePage() {
         <div className="favorite-list">
           {favorites.map((f) => {
             const recipe = f.recipe || {};
+
             return (
               <div
                 key={f.favoriteId}
@@ -67,9 +76,10 @@ export default function FavoritePage() {
                   src={recipe.imageUrl || "/no-image.png"}
                   alt={recipe.title || "레시피 이미지"}
                 />
+
                 <div className="favorite-info">
                   <h3>{recipe.title || "제목 없음"}</h3>
-                  {/* <p>{recipe.ingredients || "재료 정보 없음"}</p> */}
+
                   <button
                     className="remove-btn"
                     onClick={(e) => {
@@ -86,6 +96,7 @@ export default function FavoritePage() {
         </div>
       )}
 
+      {/* 상세 모달 */}
       {selectedRecipe && (
         <div className="modal-overlay" onClick={() => setSelectedRecipe(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -111,6 +122,7 @@ export default function FavoritePage() {
               >
                 🔍 상세 레시피 보기
               </button>
+
               <button
                 className="favorite-remove-btn"
                 onClick={() => {

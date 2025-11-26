@@ -6,15 +6,6 @@
   position: relative;
   min-height: 80vh;
 }
-
-h1 {
-  font-size: 15px; /* 작게 조정 */
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 30px;
-}
-
-/* 💬 등록된 글 없음 → 말풍선 제거 */
 .empty-bubble {
   background: none;
   border: none;
@@ -25,8 +16,6 @@ h1 {
   color: #777;
   text-align: center;
 }
-
-/* 게시글 리스트 */
 .post-list {
   display: flex;
   flex-direction: column;
@@ -79,7 +68,6 @@ h1 {
   margin-top: 5px;
 }
 
-/* 내가 쓴 글 보기 상단 배너 */
 .my-posts-banner {
   background: #fff4e8;
   color: #333;
@@ -107,7 +95,6 @@ h1 {
   text-decoration: underline;
 }
 
-/* 플로팅 버튼 */
 .floating-container {
   position: fixed;
   bottom: 30px;
@@ -168,7 +155,6 @@ h1 {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* 모달 */
 .modal-overlay {
   position: fixed;
   inset: 0;
