@@ -23,6 +23,9 @@ export default function RecipeUpload() {
 
   const [myRecipes, setMyRecipes] = useState([]);
 
+  /* -----------------------------------
+     로그인 사용자 불러오기
+  ----------------------------------- */
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -36,6 +39,9 @@ export default function RecipeUpload() {
     fetchUser();
   }, []);
 
+  /* -----------------------------------
+     내 레시피 목록 로드
+  ----------------------------------- */
   const loadUserRecipes = async () => {
     if (!user) return;
     try {
@@ -52,6 +58,9 @@ export default function RecipeUpload() {
     if (user) loadUserRecipes();
   }, [user]);
 
+  /* -----------------------------------
+     레시피 등록 / 수정
+  ----------------------------------- */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -86,10 +95,13 @@ export default function RecipeUpload() {
       resetForm();
     } catch (err) {
       console.error("레시피 등록/수정 실패:", err);
-      alert("⚠️ 서버 오류: 레시피를 처리할 수 없습니다.");
+      alert("⚠ 서버 오류: 레시피를 처리할 수 없습니다.");
     }
   };
 
+  /* -----------------------------------
+     수정 모드
+  ----------------------------------- */
   const handleEdit = (r) => {
     setIsModalOpen(true);
     setIsEditMode(true);
@@ -103,21 +115,27 @@ export default function RecipeUpload() {
     });
   };
 
+  /* -----------------------------------
+     삭제
+  ----------------------------------- */
   const handleDelete = async (id) => {
-    if (window.confirm("정말 삭제하시겠습니까?")) {
-      try {
-        await instance.delete(`/recipes/${id}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
-        });
-        alert("삭제되었습니다!");
-        loadUserRecipes();
-      } catch (err) {
-        console.error("삭제 실패:", err);
-        alert("삭제 중 오류가 발생했습니다.");
-      }
+    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+
+    try {
+      await instance.delete(`/recipes/${id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
+      });
+      alert("삭제되었습니다!");
+      loadUserRecipes();
+    } catch (err) {
+      console.error("삭제 실패:", err);
+      alert("삭제 중 오류가 발생했습니다.");
     }
   };
 
+  /* -----------------------------------
+     Reset Form
+  ----------------------------------- */
   const resetForm = () => {
     setIsModalOpen(false);
     setIsEditMode(false);
@@ -131,10 +149,13 @@ export default function RecipeUpload() {
     });
   };
 
+  /* -----------------------------------
+     UI 렌더링
+  ----------------------------------- */
   return (
     <div className="page-container">
 
-      {/* 제목 */}
+      {/* 페이지 제목 */}
       <h2 className="page-title">
         <span className="page-title-icon">🍳</span>
         나만의 레시피 관리
@@ -145,13 +166,15 @@ export default function RecipeUpload() {
         ✏️
       </button>
 
-      {/* 업로드 / 수정 모달 */}
+      {/* 업로드/수정 모달 */}
       {isModalOpen && (
         <div className="modal-overlay" onClick={resetForm}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="close-modal-btn" onClick={resetForm}>✖</button>
+          <div className="modal-upload" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-upload-close" onClick={resetForm}>✖</button>
 
-            <h2>{isEditMode ? "레시피 수정" : "나만의 레시피 등록"}</h2>
+            <h2 className="modal-upload-title">
+              {isEditMode ? "레시피 수정" : "나만의 레시피 등록"}
+            </h2>
 
             <form className="upload-form" onSubmit={handleSubmit}>
               <label>레시피 이름</label>
@@ -179,7 +202,7 @@ export default function RecipeUpload() {
                 onChange={(e) => setRecipe({ ...recipe, imageUrl: e.target.value })}
               />
 
-              <label>재료 (선택)</label>
+              <label>재료 (쉼표로 구분)</label>
               <input
                 type="text"
                 placeholder="예: 달걀, 밀가루, 설탕"
@@ -207,42 +230,65 @@ export default function RecipeUpload() {
         </div>
       )}
 
-      {/* 목록 */}
+      {/* 📌 업로드된 레시피 목록 (가로 카드 UI 적용) */}
       <div className="my-recipe-list">
         {myRecipes.length === 0 ? (
           <p className="empty">등록된 레시피가 없습니다</p>
         ) : (
-          <div className="recipe-grid">
+          <div className="my-recipe-items">
             {myRecipes.map((r) => (
               <div
                 key={r.userRecipeId}
-                className="recipe-card"
+                className="my-recipe-card"
                 onClick={() => setSelectedRecipe(r)}
               >
-                {r.imageUrl && <img src={r.imageUrl} alt={r.name} />}
-                <h3>{r.name}</h3>
-                <p>{r.description.slice(0, 50)}...</p>
+                {/* 왼쪽 이미지 */}
+                <div className="my-recipe-img-wrap">
+                  <img
+                    src={
+                      r.imageUrl && r.imageUrl.trim()
+                        ? r.imageUrl
+                        : "https://via.placeholder.com/150?text=No+Image"
+                    }
+                    alt={r.name}
+                  />
+                </div>
 
-                <div className="edit-btns">
-                  <button
-                    className="edit-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEdit(r);
-                    }}
-                  >
-                    ✏️ 수정
-                  </button>
+                {/* 오른쪽 내용 */}
+                <div className="my-recipe-body">
+                  <h3 className="my-recipe-title">{r.name}</h3>
 
-                  <button
-                    className="delete-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(r.userRecipeId);
-                    }}
-                  >
-                    🗑 삭제
-                  </button>
+                  <div className="my-recipe-ing-list">
+                    {(r.ingredients || "")
+                      .split(/[,·\n;]+/)
+                      .map((i, idx) => (
+                        <span key={idx} className="my-recipe-chip">
+                          {i.trim()}
+                        </span>
+                      ))}
+                  </div>
+
+                  <div className="my-recipe-actions">
+                    <button
+                      className="my-edit-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(r);
+                      }}
+                    >
+                      ✏️ 수정
+                    </button>
+
+                    <button
+                      className="my-delete-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(r.userRecipeId);
+                      }}
+                    >
+                      🗑 삭제
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -250,56 +296,54 @@ export default function RecipeUpload() {
         )}
       </div>
 
-      {/* 상세보기 모달 */}
+      {/* 📌 상세보기 모달 */}
       {selectedRecipe && (
-  <div className="modal-overlay" onClick={() => setSelectedRecipe(null)}>
-    <div className="upload-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay" onClick={() => setSelectedRecipe(null)}>
+          <div className="upload-modal" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="upload-modal-close"
+              onClick={() => setSelectedRecipe(null)}
+            >
+              ✖
+            </button>
 
-      {/* X 버튼 */}
-      <button className="upload-modal-close" onClick={() => setSelectedRecipe(null)}>
-        ✖
-      </button>
+            <h2 className="upload-modal-title">{selectedRecipe.name}</h2>
 
-      {/* 제목 */}
-      <h2 className="upload-modal-title">{selectedRecipe.name}</h2>
+            {selectedRecipe.imageUrl && (
+              <img
+                src={selectedRecipe.imageUrl}
+                alt={selectedRecipe.name}
+                className="upload-modal-image"
+              />
+            )}
 
-      {/* 이미지 */}
-      {selectedRecipe.imageUrl && (
-        <img
-          src={selectedRecipe.imageUrl}
-          alt={selectedRecipe.name}
-          className="upload-modal-image"
-        />
+            <h3 className="upload-modal-section-title">🧂 재료</h3>
+            <ul className="upload-modal-ingredients">
+              {selectedRecipe.ingredients
+                ?.split(/[,·\n;]+/)
+                .map((i, idx) => (
+                  <li key={idx} className="upload-modal-chip">
+                    {i.trim()}
+                  </li>
+                ))}
+            </ul>
+
+            <h3 className="upload-modal-section-title">🍳 설명</h3>
+            <div className="upload-modal-description">
+              {selectedRecipe.description}
+            </div>
+
+            {selectedRecipe.baseRecipeName && (
+              <>
+                <h3 className="upload-modal-section-title">📖 참고 레시피</h3>
+                <p className="upload-modal-reference">
+                  {selectedRecipe.baseRecipeName}
+                </p>
+              </>
+            )}
+          </div>
+        </div>
       )}
-
-      {/* 재료 */}
-      <h3 className="upload-modal-section-title">🧂 재료</h3>
-      <ul className="upload-modal-ingredients">
-        {selectedRecipe.ingredients
-          ?.split(/[,·\n;]+/)
-          .map((i, idx) => (
-            <li key={idx} className="upload-modal-chip">{i.trim()}</li>
-          ))}
-      </ul>
-
-      {/* 설명 */}
-      <h3 className="upload-modal-section-title">🍳 설명</h3>
-      <div className="upload-modal-description">
-        {selectedRecipe.description}
-      </div>
-
-      {/* 참고 레시피 */}
-      {selectedRecipe.baseRecipeName && (
-        <>
-          <h3 className="upload-modal-section-title">📖 참고 레시피</h3>
-          <p className="upload-modal-reference">{selectedRecipe.baseRecipeName}</p>
-        </>
-      )}
-    </div>
-  </div>
-)}
-
-
     </div>
   );
 }

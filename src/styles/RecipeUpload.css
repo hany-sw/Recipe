@@ -210,3 +210,111 @@
 .submit-btn:hover {
   background: #ff6a00;
 }
+/* ==========================================
+   📌 업로드된 레시피 리스트 (가로 카드 UI)
+   ========================================== */
+
+.my-recipe-items {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* 카드 전체 */
+.my-recipe-card {
+  display: flex;
+  gap: 14px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  padding: 14px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.my-recipe-card:hover {
+  background: #fff7ef;
+  transform: translateY(-2px);
+}
+
+/* 왼쪽 이미지 */
+.my-recipe-img-wrap {
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+}
+
+.my-recipe-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid #f0f0f0;
+}
+
+/* 오른쪽 내용 */
+.my-recipe-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* 제목 */
+.my-recipe-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+/* 재료 칩 */
+.my-recipe-ing-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.my-recipe-chip {
+  background: #fff1e1;
+  border: 1px solid #ffd9b3;
+  padding: 5px 8px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  color: #6b3d14;
+}
+
+/* 수정 / 삭제 버튼 */
+.my-recipe-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.my-edit-btn,
+.my-delete-btn {
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.my-edit-btn {
+  background: #ffe8d1;
+  color: #8d5d23;
+}
+
+.my-edit-btn:hover {
+  background: #ffddb3;
+}
+
+.my-delete-btn {
+  background: #ffe0e0;
+  color: #b23535;
+}
+
+.my-delete-btn:hover {
+  background: #ffcccc;
+}
