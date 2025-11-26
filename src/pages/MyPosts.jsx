@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { getProfile } from "../api/api";
 
-import "../styles/common.css";     // ⭐ 공통 스타일
-import "../styles/Community.css";  // 게시물 카드 스타일 유지
+import "../styles/common.css";
+import "../styles/Community.css";
 
 export default function MyPosts() {
   const [myPosts, setMyPosts] = useState([]);
@@ -11,7 +11,7 @@ export default function MyPosts() {
 
   const BASE_URL = "http://210.110.33.220:8183/api";
 
-  // ✅ 사용자 정보 가져오기
+  // ✅ 로그인 사용자 정보 가져오기
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -27,29 +27,28 @@ export default function MyPosts() {
   // ✅ 내가 쓴 글만 불러오기
   useEffect(() => {
     const fetchMyPosts = async () => {
+      if (!currentUser?.username) return;
+
       try {
         const res = await axios.get(`${BASE_URL}/board`);
-        const userEmail = currentUser?.email;
-        if (userEmail) {
-          const filtered = res.data.filter(
-            (p) =>
-              p.user?.email === userEmail ||
-              p.userEmail === userEmail
-          );
-          setMyPosts(filtered);
-        }
+
+        // 🔥 백엔드가 반환하는 DTO는 user 없음 → username만 존재함
+        const filtered = res.data.filter(
+          (post) => post.username === currentUser.username
+        );
+
+        setMyPosts(filtered);
       } catch (err) {
         console.error("내 게시글 불러오기 실패:", err);
       }
     };
 
-    if (currentUser) fetchMyPosts();
+    fetchMyPosts();
   }, [currentUser]);
 
   return (
     <div className="page-container">
-      
-      {/* ⭐ 공통 상단 제목 영역 */}
+      {/* ⭐ 통일된 제목 */}
       <h2 className="page-title">
         <span className="page-title-icon">✏️</span>
         내가 쓴 글
@@ -68,9 +67,8 @@ export default function MyPosts() {
               <p className="post-content">{post.content}</p>
 
               <div className="post-info">
-                <span className="post-date">
-                  {new Date(post.createdAt).toLocaleString()}
-                </span>
+                <span>작성자: {post.username}</span>
+                <span>{new Date(post.createdAt).toLocaleString()}</span>
               </div>
             </div>
           ))}
