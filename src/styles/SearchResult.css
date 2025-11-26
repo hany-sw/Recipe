@@ -305,3 +305,23 @@
   color: #555;
   margin-left: 4px;
 }
+.like-section {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.heart {
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.heart.liked {
+  color: red;
+}
+
+.like-count {
+  font-size: 14px;
+  color: #555;
+}

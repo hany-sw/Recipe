@@ -116,6 +116,10 @@ export const aiSetDifficulty = (sessionId, difficulty) =>
 export const aiSetMealTime = (sessionId, mealTime) =>
   instance.post(`/ai/mealtime`, null, { params: { sessionId, mealTime } });
 
+// 선호하는 맛
+export const aiSetFlavor = (sessionId, flavor) =>
+  instance.post(`/ai/flavor`, null, { params: { sessionId, flavor } });
+
 // 날씨
 export const aiSetWeather = (sessionId, weather) =>
   instance.post(`/ai/weather`, null, { params: { sessionId, weather } });
