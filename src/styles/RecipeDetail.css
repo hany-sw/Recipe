@@ -343,3 +343,219 @@ h2 {
   font-size: 0.95rem;
 }
 .hint-list li { margin: 2px 0; }
+/* 기존 코드 유지... */
+
+/* ===== 사용자 레시피 상세 모달 ===== */
+/* ===== 사용자 레시피 상세 모달 (Upload 전용) ===== */
+
+.upload-modal-content {
+  position: relative !important;
+  background: #fff;
+  width: 90%;
+  max-width: 420px;
+  border-radius: 14px;
+  padding: 24px 20px 28px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  box-sizing: border-box;
+  text-align: left;
+  overflow: hidden;
+}
+
+.upload-close-btn {
+  position: absolute !important;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #444;
+  padding: 4px;
+  z-index: 10000;
+}
+
+.upload-close-btn:hover {
+  transform: scale(1.1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+/* ==========================================
+   📌 RecipeUpload 모달과 동일한 디자인 통일
+   ========================================== */
+
+/* 전체 배경 */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+/* 모달 박스 */
+.upload-modal {
+  background: #fff;
+  border-radius: 14px;
+  width: 90%;
+  max-width: 400px;
+  padding: 25px 22px 32px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  animation: fadeIn 0.2s ease;
+  position: relative;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+/* 닫기 버튼 */
+.upload-modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #555;
+  transition: 0.2s;
+}
+
+.upload-modal-close:hover {
+  color: #ff8b3d;
+  transform: scale(1.1);
+}
+
+/* 제목 */
+.upload-modal-title {
+  color: #ff8b3d;
+  font-size: 1.3rem;
+  font-weight: 800;
+  text-align: center;
+  margin-top: 35px;
+  margin-bottom: 18px;
+}
+
+/* 이미지 */
+.upload-modal-image {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  border: 1px solid #f2e9df;
+}
+
+/* 섹션 제목 */
+.upload-modal-section-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 14px 0 6px;
+  color: #ff8b3d;
+}
+
+/* 재료 칩 */
+.upload-modal-ingredients {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.upload-modal-chip {
+  background: #fff1e1;
+  border: 1px solid #ffd9b3;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  color: #6b3d14;
+}
+
+/* 설명 */
+.upload-modal-description {
+  background: #fffdf9;
+  border: 1px dashed #ffd6ae;
+  border-radius: 10px;
+  padding: 12px 14px;
+  white-space: pre-line;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+/* 참고 박스 */
+.upload-modal-reference {
+  background: #fffaf3;
+  padding: 10px 12px;
+  border-left: 3px solid #ff8b3d;
+  border-radius: 8px;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+/* ===========================================
+   📌 사용자 레시피 카드 (민정 스케치 스타일)
+   =========================================== */
+
+.user-recipe-custom-card {
+  display: flex;
+  gap: 14px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  padding: 14px;
+  margin-top: 12px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.user-recipe-custom-card:hover {
+  background: #fff7ef;
+  transform: translateY(-2px);
+}
+
+/* 왼쪽 이미지 */
+.user-recipe-custom-img-wrap {
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+}
+
+.user-recipe-custom-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid #f0f0f0;
+}
+
+/* 오른쪽 본문 */
+.user-recipe-custom-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.user-recipe-custom-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+/* 재료 칩 */
+.user-recipe-custom-ing-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.user-recipe-custom-ing-chip {
+  background: #fff1e1;
+  border: 1px solid #ffd9b3;
+  color: #6b3d14;
+  padding: 5px 8px;
+  font-size: 0.82rem;
+  border-radius: 999px;
+}

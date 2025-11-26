@@ -10,7 +10,7 @@ import MyPosts from "./pages/MyPosts";
 import RecipeUpload from "./pages/RecipeUpload";
 import FavoritePage from "./pages/FavoritePage";
 import SearchResult from "./pages/SearchResult.jsx";
-import RecipeDetail from "./pages/RecipeDetail";
+import RecipeDetail from "./pages/RecipeDetail.jsx";
 import CommunityPage from "./pages/Community.jsx";
 
 

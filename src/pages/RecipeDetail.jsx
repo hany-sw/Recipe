@@ -8,7 +8,7 @@ export default function RecipeDetail() {
   const location = useLocation();
   const BASE_URL = "http://210.110.33.220:8183/api";
 
-  // 라우팅으로 넘어온 값들
+  // 라우팅 데이터
   const passedRecipe = location.state?.recipe;
   const titleFromState = location.state?.title;
   const explicitAiMode = location.state?.aiMode === true;
@@ -20,11 +20,14 @@ export default function RecipeDetail() {
     anchor: { top: 0, left: 0 },
   });
 
-  const [data, setData] = useState(null); 
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  /* ---------------- UTILS ---------------- */
+  // ⭐ 사용자 레시피 모달 상태
+  const [selectedUserRecipe, setSelectedUserRecipe] = useState(null);
+
+  /* ======================= UTILS ======================= */
 
   const toSearchQuery = (raw) => {
     if (!raw) return "";
@@ -59,13 +62,11 @@ export default function RecipeDetail() {
     return dots.length > 1 ? dots : [txt.trim()];
   };
 
-  const splitIngredientsText = (txt = "") => {
-    if (!txt || typeof txt !== "string") return [];
-    return txt
+  const splitIngredientsText = (txt = "") =>
+    txt
       .split(/[,·\n;]+/)
       .map((s) => s.replace(/^-/, "").trim())
       .filter(Boolean);
-  };
 
   const buildCookTimeFromRange = (r = {}) => {
     const toNum = (v) => {
@@ -74,11 +75,14 @@ export default function RecipeDetail() {
       if (typeof v === "string" && !Number.isNaN(Number(v))) return Number(v);
       return null;
     };
+
     const minN = toNum(r.minTime ?? r.minCookTime);
     const maxN = toNum(r.maxTime ?? r.maxCookTime);
+
     const f = (n) => (typeof n === "number" ? `${n}분` : "");
     const a = f(minN);
     const b = f(maxN);
+
     if (a && b) return `${a} ~ ${b}`;
     if (a) return a;
     if (b) return b;
@@ -112,11 +116,12 @@ export default function RecipeDetail() {
     if (Array.isArray(r.ingredients)) {
       ingredientsArr = normalizeAiIngredientsArray(r.ingredients);
     } else {
-      ingredientsArr = splitIngredientsText(r.ingredients || r.RCP_PARTS_DTLS || "");
+      ingredientsArr = splitIngredientsText(
+        r.ingredients || r.RCP_PARTS_DTLS || ""
+      );
     }
 
-    const descriptionText =
-      r.description || r.RCP_WAY2 || "";
+    const descriptionText = r.description || r.RCP_WAY2 || "";
 
     const steps = Array.isArray(r.steps)
       ? r.steps.filter(Boolean)
@@ -160,12 +165,10 @@ export default function RecipeDetail() {
   }, [passedRecipe, userRecipesFromState]);
 
   useEffect(() => {
-    if (initialData) {
-      setData(initialData);
-    }
+    if (initialData) setData(initialData);
   }, [initialData]);
 
-  /* ---------------- Fetch Detail (항상 호출) ---------------- */
+  /* ---------------- Fetch Detail ---------------- */
 
   useEffect(() => {
     const queryTitle =
@@ -222,12 +225,13 @@ export default function RecipeDetail() {
     return () => (canceled = true);
   }, [BASE_URL, explicitAiMode, passedRecipe, titleFromState]);
 
-  /* ---------------- UI Logic ---------------- */
+  /* ---------------- UI LOGIC ---------------- */
 
   const first = data?.publicRecipe?.[0] || null;
 
   const onIngredientClick = (e, ingName) => {
     const rect = e.currentTarget?.getBoundingClientRect?.();
+
     if (!rect) {
       setShopPanel({
         open: true,
@@ -236,9 +240,12 @@ export default function RecipeDetail() {
       });
       return;
     }
+
     setShopPanel((prev) => {
       const isSame = prev.open && prev.ingredient === ingName;
-      if (isSame) return { open: false, ingredient: "", anchor: { top: 0, left: 0 } };
+      if (isSame)
+        return { open: false, ingredient: "", anchor: { top: 0, left: 0 } };
+
       return {
         open: true,
         ingredient: ingName,
@@ -249,18 +256,24 @@ export default function RecipeDetail() {
 
   const openSsg = () => {
     const q = encodeURIComponent(toSearchQuery(shopPanel.ingredient));
-    window.open(`https://www.ssg.com/search.ssg?target=all&query=${q}`, "_blank");
+    window.open(
+      `https://www.ssg.com/search.ssg?target=all&query=${q}`,
+      "_blank"
+    );
   };
 
   const openCoupang = () => {
     const q = encodeURIComponent(toSearchQuery(shopPanel.ingredient));
-    window.open(`https://www.coupang.com/np/search?component=&q=${q}`, "_blank");
+    window.open(
+      `https://www.coupang.com/np/search?component=&q=${q}`,
+      "_blank"
+    );
   };
 
   const closeShopPanel = () =>
     setShopPanel({ open: false, ingredient: "", anchor: { top: 0, left: 0 } });
 
-  /* ---------------- Render ---------------- */
+  /* ---------------- RENDER ---------------- */
 
   if (loading) return <p>레시피 정보를 불러오는 중입니다...</p>;
   if (error) return <p className="error-text">{error}</p>;
@@ -276,7 +289,7 @@ export default function RecipeDetail() {
           "레시피 상세"}
       </h1>
 
-      {/* 메타 정보 */}
+      {/* 메타 카드 */}
       <div className="meta-cards">
         {first.difficulty && (
           <div className="meta-card">
@@ -314,7 +327,7 @@ export default function RecipeDetail() {
         )}
       </div>
 
-      {/* 대표 이미지 */}
+      {/* 이미지 */}
       {first.imageUrl && (
         <img
           src={first.imageUrl}
@@ -358,27 +371,103 @@ export default function RecipeDetail() {
         <p className="muted">조리 과정 정보 없음</p>
       )}
 
-      {/* 👩‍🍳 사용자 등록 레시피 (백엔드가 묶어준 결과) */}
-      {Array.isArray(data?.userRecipes) && data.userRecipes.length > 0 && (
-        <div className="user-recipes">
-          <h2>👩‍🍳 사용자 등록 레시피</h2>
-          {data.userRecipes.map((r) => (
-            <div key={r.userRecipeId || r.id} className="user-recipe-card">
-              <img
-                src={
-                  r.imageUrl && r.imageUrl.trim()
-                    ? r.imageUrl
-                    : "https://via.placeholder.com/200x150?text=No+Image"
-                }
-                alt={r.name}
-              />
-              <h3>{r.name}</h3>
-              <p>{r.description}</p>
-              <p>재료: {r.ingredients}</p>
-            </div>
-          ))}
+      {/* 사용자 등록 레시피 */}
+{Array.isArray(data?.userRecipes) && data.userRecipes.length > 0 && (
+  <div className="user-recipes">
+    <h2>👩‍🍳 사용자 등록 레시피</h2>
+
+    {data.userRecipes.map((r) => (
+      <div
+        key={r.userRecipeId || r.id}
+        className="user-recipe-custom-card"
+        onClick={() => setSelectedUserRecipe(r)}
+      >
+        {/* 왼쪽 이미지 */}
+        <div className="user-recipe-custom-img-wrap">
+          <img
+            src={
+              r.imageUrl && r.imageUrl.trim()
+                ? r.imageUrl
+                : "https://via.placeholder.com/200x150?text=No+Image"
+            }
+            alt={r.name}
+          />
         </div>
+
+        {/* 오른쪽 텍스트 */}
+        <div className="user-recipe-custom-body">
+          <h3 className="user-recipe-custom-title">{r.name}</h3>
+
+          <div className="user-recipe-custom-ing-list">
+            {(r.ingredients || "")
+              .split(/[,·\n;]+/)
+              .map((i, idx) => (
+                <span key={idx} className="user-recipe-custom-ing-chip">
+                  {i.trim()}
+                </span>
+              ))}
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+)}
+
+
+      {/* ⭐ 사용자 레시피 상세 모달 (레시피 업로드 모달 스타일 재사용) */}
+{selectedUserRecipe && (
+  <div className="modal-overlay" onClick={() => setSelectedUserRecipe(null)}>
+    <div className="upload-modal" onClick={(e) => e.stopPropagation()}>
+
+      {/* X 버튼 */}
+      <button
+        className="upload-modal-close"
+        onClick={() => setSelectedUserRecipe(null)}
+      >
+        ✖
+      </button>
+
+      {/* 제목 */}
+      <h2 className="upload-modal-title">{selectedUserRecipe.name}</h2>
+
+      {/* 이미지 */}
+      {selectedUserRecipe.imageUrl && (
+        <img
+          src={selectedUserRecipe.imageUrl}
+          alt={selectedUserRecipe.name}
+          className="upload-modal-image"
+        />
       )}
+
+      {/* 재료 */}
+      <h3 className="upload-modal-section-title">🧂 재료</h3>
+      <ul className="upload-modal-ingredients">
+        {selectedUserRecipe.ingredients
+          ?.split(/[,·\n;]+/)
+          .map((i, idx) => (
+            <li key={idx} className="upload-modal-chip">{i.trim()}</li>
+          ))}
+      </ul>
+
+      {/* 설명 */}
+      <h3 className="upload-modal-section-title">🍳 설명</h3>
+      <div className="upload-modal-description">
+        {selectedUserRecipe.description}
+      </div>
+
+      {/* 참고 레시피 */}
+      {selectedUserRecipe.baseRecipeName && (
+        <>
+          <h3 className="upload-modal-section-title">📖 참고 레시피</h3>
+          <p className="upload-modal-reference">
+            {selectedUserRecipe.baseRecipeName}
+          </p>
+        </>
+      )}
+    </div>
+  </div>
+)}
+
 
       {/* 쇼핑 패널 */}
       {shopPanel.open && (
@@ -386,7 +475,12 @@ export default function RecipeDetail() {
           <div
             className="shop-overlay"
             onClick={closeShopPanel}
-            style={{ position: "fixed", inset: 0, background: "transparent", zIndex: 998 }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "transparent",
+              zIndex: 998,
+            }}
           />
           <div
             className="shop-pop"
