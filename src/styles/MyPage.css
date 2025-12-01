@@ -1,15 +1,27 @@
+/* ==============================
+✨ 전체 공통 설정
+============================== */
 * {
   box-sizing: border-box;
 }
 
+body {
+  background: #fff8f0;
+}
+
 /* ==============================
-📱 기본 레이아웃
+📱 공통 레이아웃 (PC + 모바일)
 ============================== */
 .mypage-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 30px 0;
+
+  width: 100%;
+  max-width: 480px;        /* 🔥 PC에서도 폭을 모바일처럼 제한 */
+  margin: 0 auto;          /* 🔥 항상 중앙 */
+  padding: 30px 0 60px;
+
   background-color: #fff8f0;
   min-height: 100vh;
   font-family: "Pretendard", sans-serif;
@@ -20,32 +32,36 @@
 ============================== */
 .profile-card {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
   background: #ffffff;
   border-radius: 16px;
   padding: 30px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-  width: 90%;
+  width: 100%;             /* 🔥 PC에서도 전체를 채우지 않고 모바일처럼 유지 */
   max-width: 420px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 24px;
+
   margin-bottom: 30px;
 }
 
+/* 프사 이미지 */
 .profile-img {
-  width: 200px;  /* ✅ 기존 100px → 140px */
-  height: 140px;
+  width: 150px;  
+  height: 150px;
   border-radius: 50%;
   object-fit: cover;
-  margin-right: 25px;
-  transition: 0.25s ease;
-  border: none; /* ✅ 테두리 제거 */
+  transition: 0.2s ease;
+  cursor: pointer;
 }
 
 .profile-img:hover {
   transform: scale(1.05);
 }
 
+/* 텍스트 정보 */
 .profile-info p {
   margin: 8px 0;
   font-size: 17px;
@@ -59,40 +75,86 @@
 /* ✏️ 프로필 수정 버튼 */
 .edit-top-right {
   position: absolute;
-  top: 15px;
-  right: 18px;
+  top: 18px;
+  right: 20px;
   color: #ff8b3d;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   transition: 0.2s;
 }
 
 .edit-top-right:hover {
-  transform: scale(1.05);
+  transform: scale(1.08);
 }
 
 /* ==============================
-📋 메뉴 리스트
+📷 사진 수정/삭제 메뉴
 ============================== */
-.menu-list {
+.photo-menu-vertical {
+  position: absolute;
+  top: 170px;
+  left: 20px;
+
   display: flex;
   flex-direction: column;
-  margin-top: 10px;
-  width: 90%;
+  gap: 6px;
+
+  background: white;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+
+  z-index: 20;
+}
+
+.photo-menu-btn {
+  font-size: 14px;
+  padding: 7px 12px;
+  border: none;
+  background: #f7f7f7;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: 0.2s;
+}
+
+.photo-menu-btn:hover {
+  background: #ffeeda;
+}
+
+/* 삭제 버튼 */
+.photo-menu-btn.delete {
+  background: #ffe5e5;
+  color: #c22;
+}
+
+.photo-menu-btn.delete:hover {
+  background: #ffcccc;
+}
+
+/* ==============================
+📋 메뉴 버튼 리스트
+============================== */
+.menu-list {
+  width: 100%;
   max-width: 420px;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .menu-list button {
+  width: 100%;
   background: #fff3e0;
   border: 1px solid #ffd9a0;
   border-radius: 10px;
-  padding: 14px;
-  font-size: 16px;
+  padding: 14px 0;
+  font-size: 15px;
   cursor: pointer;
   transition: 0.2s;
 }
@@ -102,20 +164,21 @@
 }
 
 /* ==============================
-🚪 로그아웃 버튼
+🚪 로그아웃
 ============================== */
 .logout-section {
-  margin-top: 60px; /* ✅ 기존보다 아래로 내림 */
+  margin-top: 50px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
 }
 
 .logout-section button {
   background: #444;
   color: white;
   border: none;
+  padding: 12px 26px;
   border-radius: 8px;
-  padding: 12px 24px;
   cursor: pointer;
   font-size: 15px;
   transition: 0.2s;
@@ -125,30 +188,41 @@
   background: #222;
 }
 
+/* 탈퇴 */
+.logout-section .delete-account {
+  margin-top: 12px;
+  color: #ff4d4d;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: underline;
+}
+
 /* ==============================
-🪄 모달 (프로필 수정 등)
+🪄 모달
 ============================== */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 2000;
 }
 
 .modal-content {
   background: white;
-  padding: 30px;
+  padding: 26px;
   border-radius: 12px;
-  width: 320px;
-  animation: fadeIn 0.2s ease;
+  width: 90%;
+  max-width: 340px;
+  animation: fadeIn 0.25s ease;
 }
 
 .modal-content h3 {
   color: #ff8b3d;
+  margin-bottom: 14px;
   text-align: center;
-  margin-bottom: 15px;
 }
 
 .modal-content input {
@@ -160,12 +234,12 @@
 }
 
 .save-btn {
+  width: 100%;
   background: #ff8b3d;
   border: none;
   color: white;
   padding: 10px;
   border-radius: 6px;
-  width: 100%;
   cursor: pointer;
 }
 
@@ -174,90 +248,29 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.98); }
-  to { opacity: 1; transform: scale(1); }
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 /* ==============================
-📱 모바일 반응형 (480px 이하)
+📱 모바일 전용
 ============================== */
 @media screen and (max-width: 480px) {
-  .mypage-container {
-    padding: 20px 10px;
-  }
-
   .profile-card {
     flex-direction: column;
-    align-items: center;
     text-align: center;
-    padding: 20px;
+    gap: 18px;
   }
 
   .profile-img {
+    margin: 0;
     width: 120px;
     height: 120px;
-    margin: 0 0 15px 0;
   }
 
-  .profile-info p {
-    font-size: 15px;
+  .photo-menu-vertical {
+    top: 150px;
+    left: 50%;
+    transform: translateX(-50%);
   }
-
-  .edit-btn {
-    top: 10px;
-    right: 15px;
-    font-size: 14px;
-  }
-
-  .menu-list {
-    width: 100%;
-    gap: 8px;
-  }
-
-  .menu-list button {
-    font-size: 14px;
-    padding: 12px;
-  }
-
-  .logout-btn {
-    width: 90%;
-    font-size: 14px;
-  }
-}
-.photo-menu-vertical {
-  position: absolute;
-  top: 90px;
-  left: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  background: white;
-  border: 1px solid #ddd;
-  padding: 10px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  z-index: 10;
-}
-
-.photo-menu-btn {
-  font-size: 14px;
-  padding: 6px 10px;
-  border: none;
-  background: #f7f7f7;
-  border-radius: 8px;
-  cursor: pointer;
-  text-align: left;
-}
-
-.photo-menu-btn:hover {
-  background: #ffeedb;
-}
-
-.photo-menu-btn.delete {
-  background: #ffe5e5;
-  color: #d33;
-}
-
-.photo-menu-btn.delete:hover {
-  background: #ffcccc;
 }
