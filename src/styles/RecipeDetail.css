@@ -559,3 +559,21 @@ h2 {
   font-size: 0.82rem;
   border-radius: 999px;
 }
+/* ============================================
+   📌 상세 페이지 배경 잘림 현상 해결
+   ============================================ */
+
+/* 전체 페이지 배경 통일 */
+html, body {
+  background-color: #fffaf3 !important;
+  min-height: 100%;
+}
+
+/* 상세 페이지가 짧을 때도 배경 유지 */
+.recipe-detail-page {
+  background-color: #fffaf3;
+  min-height: 100vh;
+  width: 100%;
+  padding-bottom: 40px;
+  box-sizing: border-box;
+}
