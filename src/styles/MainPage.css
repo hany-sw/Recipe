@@ -340,3 +340,85 @@ body {
 @media (max-width: 420px) {
   .chip { min-width: 100px; padding: 9px 12px; }
 }
+/* ===== 전체 페이지 정렬 개선 ===== */
+.main-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;     /* 가로 중앙 */
+  width: 100%;
+  min-height: 100vh;
+  background-color: #fff8ee;
+}
+
+/* 헤더 아래 콘텐츠 전체를 중앙정렬 */
+.main-content {
+  width: 100%;
+  max-width: 480px;         /* 📌 전체 중앙폭 통일 */
+  margin: 0 auto;
+  padding: 40px 16px 80px;  /* 위/아래 여백 조정 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;      /* 내부 요소 가운데 정렬 */
+  box-sizing: border-box;
+}
+
+/* 검색 안내문 + 검색창 중앙 배치 */
+.search-section {
+  width: 100%;
+  max-width: 440px;
+  margin: 20px auto 30px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 검색창 너비 안정화 */
+.search-box {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+  margin-bottom: 26px;
+}
+
+.search-box input {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+}
+
+.search-box button {
+  padding: 12px 16px;
+  border-radius: 10px;
+  background-color: #ff8b3d;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+}
+
+/* AI 모드 버튼 중앙 */
+.ai-mode-container {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  justify-content: center;
+  margin-top: -10px;
+  margin-bottom: 10px;
+}
+
+/* 인기 레시피 TOP10 박스 중앙 */
+.top10-box {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  padding: 24px 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  margin-top: 10px;
+  text-align: center;
+}

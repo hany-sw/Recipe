@@ -8,6 +8,8 @@ export default function PostDetail({ post, onClose }) {
 
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
+  const [replyTarget, setReplyTarget] = useState(null); // ⭐ 어떤 댓글에 답글 작성하는지
+  const [replyContent, setReplyContent] = useState("");
 
   /* ------------------- 댓글 불러오기 ------------------- */
   const fetchComments = async () => {
@@ -23,7 +25,7 @@ export default function PostDetail({ post, onClose }) {
     fetchComments();
   }, [post.boardId]);
 
-  /* ------------------- 댓글 작성 ------------------- */
+  /* ------------------- 일반 댓글 작성 ------------------- */
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
@@ -32,11 +34,7 @@ export default function PostDetail({ post, onClose }) {
       await axios.post(
         `${BASE_URL}/comment/${post.boardId}`,
         { content: newComment, parentId: null },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` } }
       );
 
       setNewComment("");
@@ -46,15 +44,33 @@ export default function PostDetail({ post, onClose }) {
     }
   };
 
+  /* ------------------- 답글 작성 ------------------- */
+  const handleReplySubmit = async (e, parentId) => {
+    e.preventDefault();
+    if (!replyContent.trim()) return;
+
+    try {
+      await axios.post(
+        `${BASE_URL}/comment/${post.boardId}`,
+        { content: replyContent, parentId },
+        { headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` } }
+      );
+
+      setReplyTarget(null);
+      setReplyContent("");
+      fetchComments();
+    } catch (err) {
+      console.error("답글 작성 실패:", err);
+    }
+  };
+
   /* ------------------- 댓글 삭제 ------------------- */
   const deleteComment = async (commentId) => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
 
     try {
       await axios.delete(`${BASE_URL}/comment/${commentId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
+        headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
       });
 
       fetchComments();
@@ -67,26 +83,24 @@ export default function PostDetail({ post, onClose }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="close-btn" onClick={onClose}>
-          ✖
-        </button>
+        <button className="close-btn" onClick={onClose}>✖</button>
 
         <h2>{post.title}</h2>
         <p className="author">
-          {post.username || "알 수 없음"} ·{" "}
-          {new Date(post.createdAt).toLocaleString()}
+          {post.username || "알 수 없음"} · {new Date(post.createdAt).toLocaleString()}
         </p>
 
         <p className="content">{post.content}</p>
         <hr />
 
-        {/* ------------------- 댓글 구역 ------------------- */}
+        {/* ------------------- 댓글 목록 ------------------- */}
         <h3>💬 댓글</h3>
 
         <div className="comment-list">
           {comments.length > 0 ? (
             comments.map((c) => (
               <div key={c.commentId} className="comment">
+                
                 <div className="comment-header">
                   <strong>{c.username}</strong>
                   <span>{new Date(c.createdAt).toLocaleString()}</span>
@@ -94,30 +108,65 @@ export default function PostDetail({ post, onClose }) {
 
                 <p className="comment-content">{c.content}</p>
 
-                {/* 삭제 버튼 */}
-                <button
-                  className="comment-delete-btn"
-                  onClick={() => deleteComment(c.commentId)}
-                >
-                  삭제
-                </button>
+                <div className="comment-actions">
+                  <button onClick={() => setReplyTarget(c.commentId)}>답글</button>
+                  <button className="comment-delete-btn" onClick={() => deleteComment(c.commentId)}>
+                    삭제
+                  </button>
+                </div>
 
-                {/* 대댓글 렌더링 */}
+                {/* ⭐ 답글 입력창 */}
+                {replyTarget === c.commentId && (
+                  <form
+                    className="reply-form"
+                    onSubmit={(e) => handleReplySubmit(e, c.commentId)}
+                  >
+                    <input
+                      type="text"
+                      placeholder="답글을 입력하세요..."
+                      value={replyContent}
+                      onChange={(e) => setReplyContent(e.target.value)}
+                    />
+                    <button type="submit">등록</button>
+                  </form>
+                )}
+
+                {/* ⭐ 대댓글 렌더링 */}
                 {c.replies?.length > 0 &&
                   c.replies.map((r) => (
                     <div key={r.commentId} className="reply">
-                      <strong>{r.username}</strong>
-                      <p>{r.content}</p>
-                      <span>
-                        {new Date(r.createdAt).toLocaleString()}
-                      </span>
+                      <div className="reply-header">
+                        <strong>{r.username}</strong>
+                        <span>{new Date(r.createdAt).toLocaleString()}</span>
+                      </div>
 
-                      <button
-                        className="comment-delete-btn"
-                        onClick={() => deleteComment(r.commentId)}
-                      >
-                        삭제
-                      </button>
+                      <p>{r.content}</p>
+
+                      <div className="comment-actions">
+                        <button onClick={() => setReplyTarget(r.commentId)}>답글</button>
+                        <button
+                          className="comment-delete-btn"
+                          onClick={() => deleteComment(r.commentId)}
+                        >
+                          삭제
+                        </button>
+                      </div>
+
+                      {/* 답글 입력창 (대댓글에도 가능) */}
+                      {replyTarget === r.commentId && (
+                        <form
+                          className="reply-form"
+                          onSubmit={(e) => handleReplySubmit(e, r.commentId)}
+                        >
+                          <input
+                            type="text"
+                            placeholder="답글을 입력하세요..."
+                            value={replyContent}
+                            onChange={(e) => setReplyContent(e.target.value)}
+                          />
+                          <button type="submit">등록</button>
+                        </form>
+                      )}
                     </div>
                   ))}
               </div>
@@ -127,7 +176,7 @@ export default function PostDetail({ post, onClose }) {
           )}
         </div>
 
-        {/* 댓글 작성창 */}
+        {/* ------------------- 일반 댓글 작성창 ------------------- */}
         <form className="comment-form" onSubmit={handleSubmit}>
           <input
             type="text"

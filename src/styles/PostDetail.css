@@ -155,3 +155,23 @@ h2 {
   color: #777;
   margin-top: 5px;
 }
+/* 댓글 아래 대댓글 표시 */
+.reply {
+  margin-left: 16px;
+  padding: 6px 10px;
+  border-left: 2px solid #ff8b3d22;
+  margin-top: 8px;
+}
+
+.reply-form {
+  margin-left: 16px;
+  margin-top: 6px;
+  display: flex;
+  gap: 6px;
+}
+
+.reply-form input {
+  flex: 1;
+  padding: 6px 8px;
+  font-size: 14px;
+}

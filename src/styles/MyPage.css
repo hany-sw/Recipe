@@ -224,3 +224,40 @@
     font-size: 14px;
   }
 }
+.photo-menu-vertical {
+  position: absolute;
+  top: 90px;
+  left: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: white;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  z-index: 10;
+}
+
+.photo-menu-btn {
+  font-size: 14px;
+  padding: 6px 10px;
+  border: none;
+  background: #f7f7f7;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.photo-menu-btn:hover {
+  background: #ffeedb;
+}
+
+.photo-menu-btn.delete {
+  background: #ffe5e5;
+  color: #d33;
+}
+
+.photo-menu-btn.delete:hover {
+  background: #ffcccc;
+}
