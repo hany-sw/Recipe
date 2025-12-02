@@ -1,79 +1,137 @@
+/* ================================
+   📌 자유게시판 페이지 기본 UI
+================================ */
 .community-page {
-  max-width: 600px;
-  margin: 60px auto;
-  text-align: center;
-  font-family: "Pretendard", sans-serif;
-  position: relative;
-  min-height: 80vh;
+  max-width: 620px;
+  margin: 0 auto;       /* 🔥 상단 margin 제거 */
+  padding: 26px 10px;   /* 🔥 다른 페이지와 동일한 패딩 적용 */
 }
-.empty-bubble {
-  background: none;
-  border: none;
-  box-shadow: none;
-  padding: 10px;
-  font-size: 16px;
-  font-weight: 400;
-  color: #777;
-  text-align: center;
+
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ff8a3d;  /* 주황색 통일 */
+  margin-bottom: 18px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
+
+/* ================================
+   📌 레시피 카드 스타일 적용
+================================ */
 .post-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 14px;
 }
 
 .post {
-  background: #fffdf8;
-  border-radius: 10px;
-  padding: 15px 20px;
-  text-align: left;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  display: flex;
+  gap: 14px;
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid #eee;
+  padding: 14px;
+  cursor: pointer;
+  transition: 0.2s ease;
 }
 
-.post-header {
+.post:hover {
+  background: #fff7ef;
+  transform: translateY(-2px);
+}
+
+/* 왼쪽 아이콘 영역 */
+.post-icon-wrap {
+  width: 80px;
+  height: 80px;
+  background: #fff1e1;
+  border: 1px solid #ffd9b3;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  color: #ff8b3d;
+  flex-shrink: 0;
+}
+
+/* 오른쪽 텍스트 */
+.post-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.post-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+.post-content-preview {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+/* 정보영역 */
+.post-info {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  font-size: 0.78rem;
+  color: #777;
 }
 
+/* ================================
+   📌 수정 / 삭제 버튼 (레시피 카드 스타일)
+================================ */
 .post-actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
+  margin-top: 6px;
 }
 
 .edit-btn,
 .delete-btn {
-  background: none;
+  padding: 5px 10px;
+  font-size: 0.75rem;
+  border-radius: 6px;
   border: none;
   cursor: pointer;
-  font-size: 18px;
-  transition: transform 0.2s;
+}
+
+.edit-btn {
+  background: #ffe8d1;
+  color: #8d5d23;
 }
 
 .edit-btn:hover {
-  color: #ff8b3d;
-  transform: scale(1.1);
+  background: #ffddb3;
+}
+
+.delete-btn {
+  background: #ffe0e0;
+  color: #b23535;
 }
 
 .delete-btn:hover {
-  color: #ff4d4d;
-  transform: scale(1.1);
+  background: #ffcccc;
 }
 
-.post-info {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-  color: #777;
-  margin-top: 5px;
-}
-
+/* ================================
+   📌 "내 글 보기" 배너
+================================ */
 .my-posts-banner {
   background: #fff4e8;
   color: #333;
   padding: 12px 16px;
   border-radius: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   font-size: 15px;
   font-weight: 500;
   display: flex;
@@ -87,132 +145,114 @@
   color: #ff8b3d;
   font-weight: 600;
   cursor: pointer;
-  transition: 0.2s;
 }
 
-.my-posts-banner button:hover {
-  color: #ff6a00;
-  text-decoration: underline;
-}
-
-.floating-container {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-}
-
-.floating-btn {
+/* ================================
+   📌 글쓰기 버튼 (레시피 업로드 버튼 위치)
+================================ */
+.add-post-btn {
   background: #ff8b3d;
   color: white;
   border: none;
-  border-radius: 50%;
-  width: 65px;
-  height: 65px;
-  font-size: 30px;
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 18px;
+  width: 100%;
   cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.25);
-  transition: 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  transition: 0.2s;
 }
 
-.floating-btn:hover {
+.add-post-btn:hover {
   background: #ff7a1c;
-  transform: scale(1.05);
 }
 
-.floating-menu {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  animation: slideUp 0.3s ease;
-}
-
-.floating-menu button {
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 8px 14px;
-  cursor: pointer;
-  font-size: 14px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.floating-menu button:hover {
-  background: #fff3e6;
-  border-color: #ff8b3d;
-  color: #ff8b3d;
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
+/* ================================
+   📌 글쓰기 / 수정 모달 (레시피 모달 동일)
+================================ */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 100;
+  z-index: 9999;
 }
 
 .modal-content {
   background: white;
-  border-radius: 12px;
+  border-radius: 14px;
   width: 90%;
-  max-width: 400px;
-  padding: 25px;
-  animation: fadeIn 0.2s ease;
+  max-width: 620px;
+  padding: 28px 30px 40px;
+  animation: fadeIn 0.25s ease;
+  position: relative;
+  max-height: 85vh;
+  overflow-y: auto;
 }
 
 .modal-content h2 {
-  color: #ff8b3d;
-  margin-bottom: 15px;
+  font-size: 1.35rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 25px;
+  color: #333;
 }
 
+.modal-close {
+  position: absolute;
+  top: 15px;
+  right: 18px;
+  background: none;
+  border: none;
+  font-size: 26px;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.modal-close:hover {
+  opacity: 1;
+}
+
+/* 입력 폼 */
 .post-form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
 }
 
 .post-form input,
 .post-form textarea {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   border: 1px solid #ddd;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 14px;
 }
 
 .post-form textarea {
-  min-height: 100px;
   resize: none;
+  min-height: 120px;
 }
 
 .post-form button {
   background: #ff8b3d;
   color: white;
   border: none;
-  border-radius: 8px;
-  padding: 10px;
-  cursor: pointer;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .post-form button:hover {
-  background: #ff7a1c;
+  background: #ff6a00;
 }
 
+/* 애니메이션 */
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.98); }
-  to { opacity: 1; transform: scale(1); }
+  to   { opacity: 1; transform: scale(1); }
 }

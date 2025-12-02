@@ -66,34 +66,43 @@ export default function MainPage() {
 
   return (
     <div className="main-page">
-      <header className="site-header">
-        <h1 className="logo">🍳 냉장고 레시피</h1>
-        <div className="menu-icon" onClick={() => setMenuOpen((v) => !v)}>
-          ☰
-        </div>
+      <header className="app-header">
 
-        {menuOpen && (
-          <div className="dropdown-menu">
-            {userName ? (
-              <>
-                <p>{userName}님</p>
-                <hr />
-                <button onClick={() => navigate("/mypage")}>마이페이지</button>
-                <button onClick={() => navigate("/recipe-upload")}>레시피 등록</button>
-                <button onClick={() => navigate("/favorite")}>즐겨찾기</button>
-                <button onClick={() => navigate("/community")}>자유게시판</button>
-                <hr />
-                <button onClick={handleLogout}>Logout</button>
-              </>
-            ) : (
-              <>
-                <button onClick={() => navigate("/login")}>Login</button>
-                <button onClick={() => navigate("/signup")}>Signup</button>
-              </>
-            )}
-          </div>
-        )}
-      </header>
+  {/* 중앙 제목 */}
+  <h1 className="header-title" onClick={() => navigate("/")}>
+    🍳 냉장고 레시피
+  </h1>
+
+  {/* 메뉴 버튼 */}
+  <div className="menu-icon" onClick={() => setMenuOpen((v) => !v)}>
+    ☰
+  </div>
+
+  {/* 기존 드롭다운 메뉴 그대로 유지 */}
+  {menuOpen && (
+    <div className="dropdown-menu">
+      {userName ? (
+        <>
+          <p>{userName}님</p>
+          <hr />
+          <button onClick={() => navigate("/mypage")}>마이페이지</button>
+          <button onClick={() => navigate("/recipe-upload")}>레시피 등록</button>
+          <button onClick={() => navigate("/favorite")}>즐겨찾기</button>
+          <button onClick={() => navigate("/community")}>자유게시판</button>
+          <hr />
+          <button onClick={handleLogout}>Logout</button>
+        </>
+      ) : (
+        <>
+          <button onClick={() => navigate("/login")}>Login</button>
+          <button onClick={() => navigate("/signup")}>Signup</button>
+        </>
+      )}
+    </div>
+  )}
+
+</header>
+
 
       <main className="main-content">
         <div className="search-section">

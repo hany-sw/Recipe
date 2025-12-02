@@ -17,7 +17,9 @@ export default function MyComments() {
   const loaderRef = useRef(null);
   const BASE_URL = "http://210.110.33.220:8183/api";
 
-  // 🔹 로그인 정보 불러오기
+  /* ----------------------------------------------
+     🔹 로그인 정보 가져오기
+  ------------------------------------------------ */
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -30,7 +32,9 @@ export default function MyComments() {
     fetchUser();
   }, []);
 
-  // 🔹 대댓글 포함 전체 댓글 flatten 함수
+  /* ----------------------------------------------
+     🔹 댓글 + 대댓글을 모두 flatten 하여 내 댓글 추출
+  ------------------------------------------------ */
   const extractMyComments = (comments, post) => {
     let result = [];
 
@@ -51,7 +55,9 @@ export default function MyComments() {
     return result;
   };
 
-  // 🔹 전체 게시판에서 댓글 모두 모으기
+  /* ----------------------------------------------
+     🔹 모든 게시글에서 내 댓글 가져오기
+  ------------------------------------------------ */
   useEffect(() => {
     if (!currentUser) return;
 
@@ -63,10 +69,11 @@ export default function MyComments() {
         let list = [];
 
         for (const post of boards) {
-          const resComments = await axios.get(`${BASE_URL}/comment/${post.boardId}`);
+          const resComments = await axios.get(
+            `${BASE_URL}/comment/${post.boardId}`
+          );
 
           const myList = extractMyComments(resComments.data || [], post);
-
           list.push(...myList);
         }
 
@@ -82,7 +89,9 @@ export default function MyComments() {
     fetchMyComments();
   }, [currentUser]);
 
-  // 🔹 무한스크롤
+  /* ----------------------------------------------
+     🔹 무한스크롤
+  ------------------------------------------------ */
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -92,11 +101,24 @@ export default function MyComments() {
       },
       { threshold: 1 }
     );
+
     if (loaderRef.current) observer.observe(loaderRef.current);
     return () => observer.disconnect();
   }, []);
 
   const visibleComments = allComments.slice(0, visibleCount);
+
+  /* ----------------------------------------------
+     🔹 게시글 상세보기 (중요: 전체 게시글 정보 다시 가져오기)
+  ------------------------------------------------ */
+  const openPostDetail = async (comment) => {
+    try {
+      const res = await axios.get(`${BASE_URL}/board/${comment.postId}`);
+      setSelectedPost(res.data); // 전체 게시글 데이터 전달
+    } catch (err) {
+      console.error("게시글 상세조회 실패:", err);
+    }
+  };
 
   return (
     <div className="page-container">
@@ -112,34 +134,35 @@ export default function MyComments() {
             <div
               key={c.commentId}
               className="post"
-              onClick={() =>
-                setSelectedPost({ boardId: c.postId, title: c.postTitle })
-              }
+              onClick={() => openPostDetail(c)}
             >
-              <div className="post-header">
-                <h3>
+              <div className="post-icon-wrap">💬</div>
+
+              <div className="post-body">
+                <div className="post-title">
                   {c.postTitle} <span style={{ fontSize: "18px" }}>💬</span>
-                </h3>
-              </div>
+                </div>
 
-              <p className="post-content">💬 {c.content}</p>
+                <div className="post-content-preview">💬 {c.content}</div>
 
-              <div className="post-info">
-                <span>{new Date(c.createdAt).toLocaleString()}</span>
+                <div className="post-info">
+                  <span>
+                    {c.createdAt
+                      ? new Date(c.createdAt).toLocaleString()
+                      : "시간 정보 없음"}
+                  </span>
+                </div>
               </div>
             </div>
           ))}
 
-          {/* 무한스크롤 트리거 */}
           <div ref={loaderRef} style={{ height: "30px" }}></div>
         </div>
       )}
 
+      {/* 상세보기 모달 */}
       {selectedPost && (
-        <PostDetail
-          post={selectedPost}
-          onClose={() => setSelectedPost(null)}
-        />
+        <PostDetail post={selectedPost} onClose={() => setSelectedPost(null)} />
       )}
     </div>
   );

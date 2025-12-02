@@ -1,5 +1,6 @@
-
-/* 전체 배경 */
+/* ================================
+   📌 업로드 모달 공통 오버레이
+================================ */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -10,138 +11,26 @@
   z-index: 9999;
 }
 
-/* 모달 BOX */
-.upload-modal {
-  background: white;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 400px;        /* ← 자유게시판과 동일 */
-  padding: 25px;
-  animation: fadeIn 0.2s ease;
-  position: relative;
-  max-height: 80vh;        /* 내부 스크롤 */
-  overflow-y: auto;
-}
-
-/* 닫기 버튼 (자유게시판과 동일한 위치) */
-.upload-modal-close {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  background: none;
-  border: none;
-  font-size: 22px;
-  color: #555;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.upload-modal-close:hover {
-  color: #ff8b3d;
-  transform: scale(1.1);
-}
-
-/* 모달 내부 제목 */
-.upload-modal-title {
-  color: #ff8b3d;
-  font-weight: 700;
-  text-align: center;
-  margin-bottom: 12px;
-  margin-top: 10px;
-}
-
-/* 이미지 */
-.upload-modal-image {
-  width: 100%;
-  border-radius: 10px;
-  margin-bottom: 16px;
-}
-
-/* 섹션 제목 */
-.upload-modal-section-title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #ff8b3d;
-  margin: 14px 0 6px;
-}
-
-/* 재료 칩 */
-.upload-modal-ingredients {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.upload-modal-chip {
-  background: #fff1e1;
-  border: 1px solid #ffd9b3;
-  padding: 6px 10px;
-  border-radius: 50px;
-  font-size: 0.82rem;
-  color: #6b3d14;
-}
-
-/* 설명 박스 */
-.upload-modal-description {
-  background: #fffdf9;
-  border: 1px dashed #ffd6ae;
-  padding: 12px;
-  border-radius: 10px;
-  white-space: pre-line;
-}
-
-/* 참고 레시피 */
-.upload-modal-reference {
-  background: #fffaf3;
-  padding: 10px;
-  border-left: 3px solid #ff8b3d;
-  border-radius: 6px;
-  font-size: 0.9rem;
-}
-/* 자유게시판 플로팅 버튼과 동일하게 통일 */
-.add-btn {
-  background: #ff8b3d;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 65px;
-  height: 65px;
-  font-size: 30px;
-  cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.25);
-  transition: 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-}
-
-.add-btn:hover {
-  background: #ff7a1c;
-  transform: scale(1.05);
-}
-/* ---------------------------------------
-   📌 레시피 등록/수정 모달 – 원래 디자인 복원
-   --------------------------------------- */
-
+/* ================================
+   📌 레시피 등록 모달 (확장 버전)
+   자유게시판 모달과 동일한 크기
+================================ */
+.upload-modal,
 .modal-upload {
-  position: relative;
   background: #ffffff;
+  position: relative;
   width: 90%;
-  max-width: 420px;
-  padding: 30px 28px 40px;
-  border-radius: 16px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  max-width: 620px;       /* 🔥 자유게시판 모달과 동일한 너비 */
+  max-height: 85vh;       /* 🔥 자유게시판 모달 높이 */
+  padding: 28px 30px 40px;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
   animation: fadeIn 0.25s ease;
-  max-height: 80vh;
-  overflow-y: auto;
+  overflow-y: auto;       /* 내부 스크롤 */
 }
 
+/* 닫기 버튼 */
+.upload-modal-close,
 .modal-upload-close {
   position: absolute;
   top: 18px;
@@ -151,22 +40,28 @@
   font-size: 24px;
   color: #444;
   cursor: pointer;
+  transition: 0.2s;
 }
 
+.upload-modal-close:hover,
 .modal-upload-close:hover {
   color: #ff8b3d;
   transform: scale(1.1);
 }
 
+/* 제목 */
+.upload-modal-title,
 .modal-upload-title {
   text-align: center;
   font-size: 1.35rem;
   font-weight: 800;
   color: #2d2d2d;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
-/* 입력 폼 */
+/* ================================
+   📌 업로드 폼
+================================ */
 .upload-form {
   display: flex;
   flex-direction: column;
@@ -176,13 +71,12 @@
 .upload-form label {
   font-weight: 600;
   margin-bottom: 4px;
-  display: block;
 }
 
 .upload-form input,
 .upload-form textarea {
   width: 100%;
-  padding: 11px 12px;
+  padding: 12px;
   border: 1px solid #ddd;
   border-radius: 10px;
   font-size: 14px;
@@ -191,7 +85,7 @@
 
 .upload-form textarea {
   resize: none;
-  min-height: 90px;
+  min-height: 110px;
 }
 
 /* 등록 버튼 */
@@ -204,23 +98,22 @@
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 .submit-btn:hover {
   background: #ff6a00;
 }
-/* ==========================================
-   📌 업로드된 레시피 리스트 (가로 카드 UI)
-   ========================================== */
 
+/* ================================
+   📌 업로드된 레시피 리스트
+================================ */
 .my-recipe-items {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-/* 카드 전체 */
 .my-recipe-card {
   display: flex;
   gap: 14px;
@@ -237,7 +130,6 @@
   transform: translateY(-2px);
 }
 
-/* 왼쪽 이미지 */
 .my-recipe-img-wrap {
   width: 120px;
   height: 120px;
@@ -252,7 +144,6 @@
   border: 1px solid #f0f0f0;
 }
 
-/* 오른쪽 내용 */
 .my-recipe-body {
   flex: 1;
   display: flex;
@@ -260,7 +151,6 @@
   justify-content: center;
 }
 
-/* 제목 */
 .my-recipe-title {
   font-size: 1.1rem;
   font-weight: 700;
@@ -268,7 +158,6 @@
   color: #333;
 }
 
-/* 재료 칩 */
 .my-recipe-ing-list {
   display: flex;
   flex-wrap: wrap;
@@ -285,7 +174,6 @@
   color: #6b3d14;
 }
 
-/* 수정 / 삭제 버튼 */
 .my-recipe-actions {
   display: flex;
   gap: 6px;
@@ -317,4 +205,10 @@
 
 .my-delete-btn:hover {
   background: #ffcccc;
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
 }

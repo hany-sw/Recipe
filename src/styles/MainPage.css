@@ -4,6 +4,9 @@ body, html {
   height: 100%;
 }
 
+/* ==============================
+   메인 페이지
+============================== */
 .main-page {
   display: flex;
   flex-direction: column;
@@ -13,6 +16,9 @@ body, html {
   background-color: #fff;
 }
 
+/* ==============================
+   헤더
+============================== */
 .site-header {
   width: 100%;
   background-color: #fff4e6;
@@ -39,6 +45,9 @@ body, html {
   cursor: pointer;
 }
 
+/* ==============================
+   드롭다운 메뉴
+============================== */
 .dropdown-menu {
   position: absolute;
   top: 70px;
@@ -52,6 +61,12 @@ body, html {
   padding: 10px;
   gap: 8px;
 }
+.dropdown-menu p {
+  text-align: center;
+  width: 100%;
+  font-weight: 600;
+}
+
 
 .dropdown-menu button {
   background: transparent;
@@ -66,6 +81,9 @@ body, html {
   color: white;
 }
 
+/* ==============================
+   메인 컨텐츠
+============================== */
 .main-content {
   flex: 1;
   display: flex;
@@ -77,6 +95,9 @@ body, html {
   box-sizing: border-box;
 }
 
+/* ==============================
+   인기 TOP10 박스
+============================== */
 .top10-box {
   background-color: #fff;
   border-radius: 16px;
@@ -93,6 +114,9 @@ body, html {
   font-size: 1.3rem;
 }
 
+/* ==============================
+   검색 박스
+============================== */
 .search-box {
   display: flex;
   justify-content: center;
@@ -103,8 +127,8 @@ body, html {
 }
 
 .search-box input {
-  width: 90%;             
-  max-width: 460px;        
+  width: 90%;
+  max-width: 460px;
   padding: 12px 18px;
   border: 1px solid #ccc;
   border-radius: 10px;
@@ -118,9 +142,8 @@ body, html {
   box-shadow: 0 0 6px rgba(255, 139, 61, 0.3);
 }
 
-
 .search-box button {
-  padding: 8px 12px;       
+  padding: 8px 12px;
   border: none;
   border-radius: 8px;
   background-color: #ff8b3d;
@@ -128,92 +151,186 @@ body, html {
   font-weight: bold;
   cursor: pointer;
   transition: 0.2s;
-  font-size: 14px;          
+  font-size: 14px;
 }
 
 .search-box button:hover {
   background-color: #ff6a00;
 }
-/* ===== 검색 안내문 + 검색창 ===== */
+
+/* ==============================
+   검색 안내문
+============================== */
 .search-section {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  margin-top: 25px;
+  margin-top: 65px;
   margin-bottom: 35px;
 }
 
-/* 🥕 안내 문구 */
 .search-guide {
   font-size: 24px;
   font-weight: 700;
   color: #ff8b3d;
   margin-bottom: 14px;
 }
-/* 🔥 상단 흰색 여백 제거 */
+
+/* 상단 흰색 여백 제거 */
 body {
   margin: 0;
   padding: 0;
-  background-color: #fff8ee; /* 페이지 배경색 유지 */
+  background-color: #fff8ee;
 }
 
-/* 🔥 메인 컨텐츠가 위로 붙게 */
 .main-page {
   margin-top: 0;
   padding-top: 0;
 }
-/* AI 모드 모달 */
-.ai-modal .field { margin: 10px 0 14px; text-align:left; }
-.ai-modal .field label { display:block; font-weight:600; margin-bottom:8px; }
-.chip-row { display:flex; flex-wrap:wrap; gap:8px; }
-.chip {
-  border:1px solid #ddd; background:#fff; border-radius:999px;
-  padding:6px 12px; cursor:pointer; font-size:14px;
+
+/* ==============================
+   AI 모드 - 공통 필드
+============================== */
+.ai-modal .field {
+  margin: 10px 0 14px;
+  text-align: left;
 }
-.chip.on { border-color:#ff8b3d; background:#fff6ee; color:#ff7a1c; }
+
+.ai-modal .field label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.chip.on {
+  border-color: #ff8b3d;
+  background: #fff6ee;
+  color: #ff7a1c;
+}
+
 .ingredient-input {
-  width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:8px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
 }
+
+/* AI 시작 버튼 */
 .start-ai-btn {
-  width:100%; margin-top:10px; padding:10px 12px; border:none;
-  border-radius:8px; background:linear-gradient(135deg,#4ca8ff,#1d82e8);
-  color:#fff; font-weight:700; cursor:pointer;
-}
-.start-ai-btn:hover { filter:brightness(0.95); }
-.modal-content.ai h2 { margin-bottom: 8px; }
-.ai-row { margin: 10px 0 14px; }
-.ai-row h4 { margin: 0 0 8px; font-size: 14px; color:#444; }
-
-.chip {
-  display:inline-block; margin:4px 6px 0 0; padding:6px 10px;
-  border-radius:16px; border:1px solid #ddd; background:#fff; cursor:pointer; font-size:13px;
-}
-.chip.active { background:#ffe9d6; border-color:#ffb974; }
-
-.allergy-add { display:flex; gap:6px; margin-top:8px; }
-.allergy-add input { flex:1; padding:8px; border:1px solid #ddd; border-radius:8px; }
-.allergy-add .mini { padding:6px 10px; border-radius:8px; border:1px solid #ddd; background:#fff; cursor:pointer; }
-
-.tagline { margin-top:6px; font-size:12px; color:#555; }
-.tag { display:inline-block; margin:4px 6px 0 0; padding:3px 8px; background:#f3f3f3; border-radius:12px; }
-
-.ai-actions { display:flex; justify-content:flex-end; margin-top:14px; }
-.start-ai-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
   background: linear-gradient(135deg, #4ca8ff, #1d82e8);
-  color:#fff; border:none; border-radius:8px; padding:10px 14px; cursor:pointer; font-weight:600;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
 }
-/* 모달 오버레이는 가운데 정렬 유지 */
+
+.start-ai-btn:hover {
+  filter: brightness(0.95);
+}
+
+/* ==============================
+   AI 모달 레이아웃
+============================== */
+.modal-content.ai h2 {
+  margin-bottom: 8px;
+}
+
+.ai-row {
+  margin: 10px 0 14px;
+}
+
+.ai-row h4 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #444;
+}
+
+/* 칩(재정의) */
+.chip {
+  display: inline-block;
+  margin: 4px 6px 0 0;
+  padding: 6px 10px;
+  border-radius: 16px;
+  border: 1px solid #ddd;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.chip.active {
+  background: #ffe9d6;
+  border-color: #ffb974;
+}
+
+/* 알러지 추가 */
+.allergy-add {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.allergy-add input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.allergy-add .mini {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: #fff;
+  cursor: pointer;
+}
+
+/* 태그 */
+.tagline {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #555;
+}
+
+.tag {
+  display: inline-block;
+  margin: 4px 6px 0 0;
+  padding: 3px 8px;
+  background: #f3f3f3;
+  border-radius: 12px;
+}
+
+/* ==============================
+   AI 모달 구조
+============================== */
 .modal-overlay {
   position: fixed;
   inset: 0;
   background: rgba(20,20,20,0.45);
   display: grid;
-  place-items: center; /* 가로/세로 가운데 */
+  place-items: center;
   z-index: 1000;
 }
 
-/* 공통 모달 스타일 (ai 변형은 inline style + 아래 유틸로 보강) */
 .modal-content.ai {
   background: #fff;
   border-radius: 14px;
@@ -221,7 +338,7 @@ body {
   position: relative;
 }
 
-/* 닫기 버튼 위치 */
+/* 닫기 버튼 */
 .modal-content.ai .close-btn {
   position: absolute;
   top: 10px;
@@ -232,14 +349,17 @@ body {
   cursor: pointer;
   opacity: 0.6;
 }
-.modal-content.ai .close-btn:hover { opacity: 1; }
 
-/* 내부 콘텐츠 중앙 정렬 + 넉넉한 여백 */
+.modal-content.ai .close-btn:hover {
+  opacity: 1;
+}
+
+/* 모달 내부 */
 .ai-content {
   width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center; /* 가운데 */
+  align-items: center;
   gap: 16px;
   text-align: center;
 }
@@ -255,15 +375,16 @@ body {
   gap: 14px;
 }
 
-.ai-center { align-items: center; }
+.ai-center {
+  align-items: center;
+}
 
-/* 질문 텍스트 */
 .ai-question {
   margin: 4px 0 6px;
   line-height: 1.35;
 }
 
-/* 선택지 그리드: 가운데 + 여백 */
+/* 선택지 그리드 */
 .choice-grid {
   width: min(560px, 90%);
   margin: 0 auto;
@@ -273,7 +394,7 @@ body {
   justify-items: center;
 }
 
-/* 칩 버튼 */
+/* 칩 (모달 버전) */
 .chip {
   min-width: 120px;
   padding: 10px 14px;
@@ -283,24 +404,40 @@ body {
   cursor: pointer;
   transition: transform .08s ease, background .2s ease, border-color .2s ease;
 }
-.chip:hover { transform: translateY(-1px); background: #f5f3ff; border-color: #c7b9ff; }
-.chip.active { background: #ede8ff; border-color: #7c5cff; font-weight: 600; }
 
-/* 추가 알러지 입력 */
+.chip:hover {
+  transform: translateY(-1px);
+  background: #f5f3ff;
+  border-color: #c7b9ff;
+}
+
+.chip.active {
+  background: #ede8ff;
+  border-color: #7c5cff;
+  font-weight: 600;
+}
+
+/* 알러지 입력 */
 .allergy-add {
   display: flex;
   gap: 8px;
   width: min(560px, 90%);
   margin: 0 auto;
 }
+
 .allergy-add input {
   flex: 1;
   padding: 10px 12px;
-  border: 1px solid #ddd; border-radius: 10px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
 }
 
-/* 태그 라인 */
-.tagline { font-size: 14px; color: #555; }
+/* 태그 */
+.tagline {
+  font-size: 14px;
+  color: #555;
+}
+
 .tagline .tag {
   display: inline-block;
   margin: 2px 6px 0 0;
@@ -309,12 +446,13 @@ body {
   background: #f3f3f7;
 }
 
-/* 액션 버튼 묶음 */
+/* 버튼 */  
 .ai-actions.row {
   display: flex;
   gap: 10px;
   justify-content: center;
 }
+
 .start-ai-btn {
   border: none;
   background: #7c5cff;
@@ -323,102 +461,31 @@ body {
   border-radius: 10px;
   cursor: pointer;
 }
-.start-ai-btn:disabled { opacity: .6; cursor: default; }
 
-/* 인풋 */
+.start-ai-btn:disabled {
+  opacity: .6;
+  cursor: default;
+}
+
+/* 입력창 */
 .ai-input {
   width: min(560px, 90%);
   margin: 0 auto;
   padding: 12px 14px;
-  border: 1px solid #ddd; border-radius: 10px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
 }
 
-/* 로딩 텍스트 */
-.ai-loading-text { font-size: 15px; color: #555; }
+/* 로딩 */
+.ai-loading-text {
+  font-size: 15px;
+  color: #555;
+}
 
-/* 반응형 살짝 */
+/* 반응형 */
 @media (max-width: 420px) {
-  .chip { min-width: 100px; padding: 9px 12px; }
-}
-/* ===== 전체 페이지 정렬 개선 ===== */
-.main-page {
-  display: flex;
-  flex-direction: column;
-  align-items: center;     /* 가로 중앙 */
-  width: 100%;
-  min-height: 100vh;
-  background-color: #fff8ee;
-}
-
-/* 헤더 아래 콘텐츠 전체를 중앙정렬 */
-.main-content {
-  width: 100%;
-  max-width: 480px;         /* 📌 전체 중앙폭 통일 */
-  margin: 0 auto;
-  padding: 40px 16px 80px;  /* 위/아래 여백 조정 */
-  display: flex;
-  flex-direction: column;
-  align-items: center;      /* 내부 요소 가운데 정렬 */
-  box-sizing: border-box;
-}
-
-/* 검색 안내문 + 검색창 중앙 배치 */
-.search-section {
-  width: 100%;
-  max-width: 440px;
-  margin: 20px auto 30px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* 검색창 너비 안정화 */
-.search-box {
-  width: 100%;
-  max-width: 420px;
-  display: flex;
-  gap: 10px;
-  margin-top: 18px;
-  margin-bottom: 26px;
-}
-
-.search-box input {
-  flex: 1;
-  padding: 12px 14px;
-  border-radius: 10px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-}
-
-.search-box button {
-  padding: 12px 16px;
-  border-radius: 10px;
-  background-color: #ff8b3d;
-  color: #fff;
-  font-weight: 700;
-  cursor: pointer;
-  border: none;
-}
-
-/* AI 모드 버튼 중앙 */
-.ai-mode-container {
-  width: 100%;
-  max-width: 420px;
-  display: flex;
-  justify-content: center;
-  margin-top: -10px;
-  margin-bottom: 10px;
-}
-
-/* 인기 레시피 TOP10 박스 중앙 */
-.top10-box {
-  width: 100%;
-  max-width: 420px;
-  background: #fff;
-  padding: 24px 20px;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  margin-top: 10px;
-  text-align: center;
+  .chip {
+    min-width: 100px;
+    padding: 9px 12px;
+  }
 }

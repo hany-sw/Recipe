@@ -10,7 +10,6 @@ export default function Community() {
   const [posts, setPosts] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -21,7 +20,9 @@ export default function Community() {
   const BASE_URL =
     import.meta.env.VITE_API_BASE_URL || "http://210.110.33.220:8183/api";
 
-  // 🔹 로그인 사용자 정보 불러오기
+  /* -----------------------------------------------------------
+     🔹 로그인 유저 정보 가져오기
+  ----------------------------------------------------------- */
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -34,7 +35,9 @@ export default function Community() {
     fetchProfile();
   }, []);
 
-  // 🔹 게시글 목록 불러오기
+  /* -----------------------------------------------------------
+     🔹 게시글 목록 불러오기
+  ----------------------------------------------------------- */
   const fetchPosts = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/board`);
@@ -48,7 +51,9 @@ export default function Community() {
     fetchPosts();
   }, []);
 
-  // 🔹 게시글 등록
+  /* -----------------------------------------------------------
+     🔹 게시글 등록
+  ----------------------------------------------------------- */
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim() || !content.trim())
@@ -59,11 +64,10 @@ export default function Community() {
         `${BASE_URL}/board`,
         { title, content },
         {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
+          headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
         }
       );
+
       setTitle("");
       setContent("");
       setModalOpen(false);
@@ -75,35 +79,20 @@ export default function Community() {
     }
   };
 
-  // 🔹 게시글 삭제
-  const handleDelete = async (boardId, username) => {
-    if (username !== currentUser?.username)
-      return alert("본인이 작성한 게시물만 삭제할 수 있습니다.");
-
-    if (!window.confirm("정말 삭제하시겠습니까?")) return;
-
-    try {
-      await axios.delete(`${BASE_URL}/board/${boardId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
-      });
-      alert("삭제 완료!");
-      fetchPosts();
-    } catch (err) {
-      console.error("게시글 삭제 실패:", err);
-    }
-  };
-
-  // 🔹 수정 모달 열기
+  /* -----------------------------------------------------------
+     🔹 수정 모달 열기
+  ----------------------------------------------------------- */
   const openEditModal = (post) => {
-    if (post.username !== currentUser?.username) {
-      alert("본인이 작성한 게시물만 수정할 수 있습니다.");
-      return;
-    }
+    if (post.username !== currentUser?.username)
+      return alert("본인이 작성한 게시물만 수정할 수 있습니다.");
+
     setEditPost(post);
     setEditModalOpen(true);
   };
 
-  // 🔹 수정 저장
+  /* -----------------------------------------------------------
+     🔹 수정 저장
+  ----------------------------------------------------------- */
   const handleEditSave = async (e) => {
     e.preventDefault();
     try {
@@ -111,9 +100,7 @@ export default function Community() {
         `${BASE_URL}/board/${editPost.boardId}`,
         { title: editPost.title, content: editPost.content },
         {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
+          headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
         }
       );
 
@@ -125,17 +112,45 @@ export default function Community() {
     }
   };
 
-  // 🔹 내가 쓴 글 필터 (username 기준)
+  /* -----------------------------------------------------------
+     🔹 게시글 삭제
+  ----------------------------------------------------------- */
+  const handleDelete = async (boardId, username) => {
+    if (username !== currentUser?.username)
+      return alert("본인이 작성한 게시물만 삭제할 수 있습니다.");
+
+    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+
+    try {
+      await axios.delete(`${BASE_URL}/board/${boardId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
+      });
+
+      alert("삭제 완료!");
+      fetchPosts();
+    } catch (err) {
+      console.error("게시글 삭제 실패:", err);
+    }
+  };
+
+  /* -----------------------------------------------------------
+     🔹 내가 쓴 글 필터링
+  ----------------------------------------------------------- */
   const filteredPosts = showMyPosts
     ? posts.filter((p) => p.username === currentUser?.username)
     : posts;
 
   return (
-    <div className="page-container">
-      <h2 className="page-title">
-        <span className="page-title-icon">💬</span>
-        자유게시판
-      </h2>
+    <div className="community-page">
+      <h2 className="page-title">💬 자유게시판</h2>
+
+<button
+  className="community-write-btn"
+  onClick={() => setModalOpen(true)}
+>
+  <i>✏️</i>
+</button>
+
 
       {showMyPosts && (
         <div className="my-posts-banner">
@@ -144,7 +159,9 @@ export default function Community() {
         </div>
       )}
 
-      {/* 📌 게시글 리스트 */}
+      {/* -----------------------------------------------------
+          📌 게시글 카드 리스트 (레시피 카드 스타일)
+      ----------------------------------------------------- */}
       {filteredPosts.length === 0 ? (
         <p className="empty-bubble">등록된 글이 없습니다.</p>
       ) : (
@@ -155,10 +172,19 @@ export default function Community() {
               className="post"
               onClick={() => setSelectedPost(post)}
             >
-              <div className="post-header">
-                <h3>{post.title}</h3>
+              {/* 왼쪽 아이콘 */}
+              <div className="post-icon-wrap">📝</div>
 
-                {/* 본인 글일 때만 수정/삭제 보임 */}
+              {/* 오른쪽 내용 */}
+              <div className="post-body">
+                <div className="post-title">{post.title}</div>
+                <div className="post-content-preview">{post.content}</div>
+
+                <div className="post-info">
+                  <span>작성자: {post.username}</span>
+                  <span>{new Date(post.createdAt).toLocaleString()}</span>
+                </div>
+
                 {currentUser?.username === post.username && (
                   <div className="post-actions">
                     <button
@@ -168,7 +194,7 @@ export default function Community() {
                         openEditModal(post);
                       }}
                     >
-                      ✏️
+                      ✏️수정
                     </button>
 
                     <button
@@ -178,59 +204,28 @@ export default function Community() {
                         handleDelete(post.boardId, post.username);
                       }}
                     >
-                      🗑️
+                      🗑삭제
                     </button>
                   </div>
                 )}
-              </div>
-
-              <p className="post-content">{post.content}</p>
-
-              <div className="post-info">
-                <span>작성자: {post.username || "알 수 없음"}</span>
-                <span>{new Date(post.createdAt).toLocaleString()}</span>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* 플로팅 버튼 */}
-      <div className="floating-container">
-        <button
-          className="floating-btn"
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
-          ✏️
-        </button>
-
-        {menuOpen && (
-          <div className="floating-menu">
-            <button
-              onClick={() => {
-                setModalOpen(true);
-                setMenuOpen(false);
-              }}
-            >
-              글쓰기
-            </button>
-            <button
-              onClick={() => {
-                setShowMyPosts(true);
-                setMenuOpen(false);
-              }}
-            >
-              내가 쓴 글
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* 글쓰기 모달 */}
+      {/* -----------------------------------------------------
+          📌 글쓰기 모달
+      ----------------------------------------------------- */}
       {modalOpen && (
         <div className="modal-overlay" onClick={() => setModalOpen(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setModalOpen(false)}>
+              ✖
+            </button>
+
             <h2>글쓰기</h2>
+
             <form onSubmit={handleSubmit} className="post-form">
               <input
                 type="text"
@@ -238,22 +233,34 @@ export default function Community() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
+
               <textarea
                 placeholder="내용"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
               />
+
               <button type="submit">등록</button>
             </form>
           </div>
         </div>
       )}
 
-      {/* 수정 모달 */}
+      {/* -----------------------------------------------------
+          📌 수정 모달
+      ----------------------------------------------------- */}
       {editModalOpen && (
         <div className="modal-overlay" onClick={() => setEditModalOpen(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="modal-close"
+              onClick={() => setEditModalOpen(false)}
+            >
+              ✖
+            </button>
+
             <h2>게시물 수정</h2>
+
             <form onSubmit={handleEditSave} className="post-form">
               <input
                 type="text"
@@ -262,19 +269,23 @@ export default function Community() {
                   setEditPost({ ...editPost, title: e.target.value })
                 }
               />
+
               <textarea
                 value={editPost.content}
                 onChange={(e) =>
                   setEditPost({ ...editPost, content: e.target.value })
                 }
               />
+
               <button type="submit">수정 완료</button>
             </form>
           </div>
         </div>
       )}
 
-      {/* 상세보기 모달 */}
+      {/* -----------------------------------------------------
+          📌 상세보기 모달
+      ----------------------------------------------------- */}
       {selectedPost && (
         <PostDetail post={selectedPost} onClose={() => setSelectedPost(null)} />
       )}

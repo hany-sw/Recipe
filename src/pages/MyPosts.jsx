@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { getProfile } from "../api/api";
-import PostDetail from "./PostDetail";   // ⭐ 반드시 import!
+import PostDetail from "./PostDetail";
 
 import "../styles/common.css";
 import "../styles/Community.css";
@@ -9,11 +9,11 @@ import "../styles/Community.css";
 export default function MyPosts() {
   const [myPosts, setMyPosts] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
-  const [selectedPost, setSelectedPost] = useState(null);   // ⭐ 모달용 상태 추가
+  const [selectedPost, setSelectedPost] = useState(null);
 
   const BASE_URL = "http://210.110.33.220:8183/api";
 
-  // ✅ 로그인 사용자 정보 가져오기
+  // 로그인 사용자 정보
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -26,7 +26,7 @@ export default function MyPosts() {
     fetchProfile();
   }, []);
 
-  // ✅ 내가 쓴 글만 불러오기
+  // 내가 쓴 글 불러오기
   useEffect(() => {
     const fetchMyPosts = async () => {
       if (!currentUser?.username) return;
@@ -34,7 +34,6 @@ export default function MyPosts() {
       try {
         const res = await axios.get(`${BASE_URL}/board`);
 
-        // 백엔드 DTO → username 기반 필터링
         const filtered = res.data.filter(
           (post) => post.username === currentUser.username
         );
@@ -50,44 +49,43 @@ export default function MyPosts() {
 
   return (
     <div className="page-container">
-
-      {/* ⭐ 통일된 제목 */}
       <h2 className="page-title">
         <span className="page-title-icon">✏️</span>
         내가 쓴 글
       </h2>
 
       {myPosts.length === 0 ? (
-        <p className="empty">작성한 게시물이 없습니다</p>
+        <p className="empty-bubble">작성한 게시물이 없습니다</p>
       ) : (
         <div className="post-list">
           {myPosts.map((post) => (
             <div
               key={post.boardId}
               className="post"
-              onClick={() => setSelectedPost(post)}   // ⭐ 게시글 클릭 → 모달 열기
+              onClick={() => setSelectedPost(post)}
             >
-              <div className="post-header">
-                <h3>{post.title}</h3>
-              </div>
+              {/* 왼쪽 아이콘 (레시피 카드 디자인 동일 적용) */}
+              <div className="post-icon-wrap">📝</div>
 
-              <p className="post-content">{post.content}</p>
+              {/* 내용 */}
+              <div className="post-body">
+                <div className="post-title">{post.title}</div>
 
-              <div className="post-info">
-                <span>작성자: {post.username}</span>
-                <span>{new Date(post.createdAt).toLocaleString()}</span>
+                <div className="post-content-preview">{post.content}</div>
+
+                <div className="post-info">
+                  <span>작성자: {post.username}</span>
+                  <span>{new Date(post.createdAt).toLocaleString()}</span>
+                </div>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* ⭐ 게시글 상세 모달 */}
+      {/* 상세보기 모달 */}
       {selectedPost && (
-        <PostDetail
-          post={selectedPost}
-          onClose={() => setSelectedPost(null)}
-        />
+        <PostDetail post={selectedPost} onClose={() => setSelectedPost(null)} />
       )}
     </div>
   );

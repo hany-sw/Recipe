@@ -1,6 +1,7 @@
 // src/pages/PostDetail.jsx
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { getProfile } from "../api/api";
 import "../styles/PostDetail.css";
 
 export default function PostDetail({ post, onClose }) {
@@ -8,8 +9,22 @@ export default function PostDetail({ post, onClose }) {
 
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
-  const [replyTarget, setReplyTarget] = useState(null); // ⭐ 어떤 댓글에 답글 작성하는지
+  const [replyTarget, setReplyTarget] = useState(null);
   const [replyContent, setReplyContent] = useState("");
+  const [currentUser, setCurrentUser] = useState(null);
+
+  /* ------------------- 로그인 유저 정보 ------------------- */
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const res = await getProfile();
+        setCurrentUser(res.data || res);
+      } catch (err) {
+        console.error("유저 정보 불러오기 실패:", err);
+      }
+    };
+    loadUser();
+  }, []);
 
   /* ------------------- 댓글 불러오기 ------------------- */
   const fetchComments = async () => {
@@ -80,6 +95,12 @@ export default function PostDetail({ post, onClose }) {
     }
   };
 
+  /* ------------------- 날짜 / 작성자 안전 처리 ------------------- */
+  const safeUsername = post.username || "알 수 없음";
+  const safeDate = post.createdAt
+    ? new Date(post.createdAt).toLocaleString()
+    : "날짜 없음";
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -87,7 +108,7 @@ export default function PostDetail({ post, onClose }) {
 
         <h2>{post.title}</h2>
         <p className="author">
-          {post.username || "알 수 없음"} · {new Date(post.createdAt).toLocaleString()}
+          {safeUsername} · {safeDate}
         </p>
 
         <p className="content">{post.content}</p>
@@ -110,12 +131,19 @@ export default function PostDetail({ post, onClose }) {
 
                 <div className="comment-actions">
                   <button onClick={() => setReplyTarget(c.commentId)}>답글</button>
-                  <button className="comment-delete-btn" onClick={() => deleteComment(c.commentId)}>
-                    삭제
-                  </button>
+
+                  {/* 🔥 본인 댓글일 경우만 삭제 버튼 표시 */}
+                  {currentUser?.username === c.username && (
+                    <button
+                      className="comment-delete-btn"
+                      onClick={() => deleteComment(c.commentId)}
+                    >
+                      삭제
+                    </button>
+                  )}
                 </div>
 
-                {/* ⭐ 답글 입력창 */}
+                {/* 답글 입력창 */}
                 {replyTarget === c.commentId && (
                   <form
                     className="reply-form"
@@ -131,7 +159,7 @@ export default function PostDetail({ post, onClose }) {
                   </form>
                 )}
 
-                {/* ⭐ 대댓글 렌더링 */}
+                {/* 대댓글 렌더링 */}
                 {c.replies?.length > 0 &&
                   c.replies.map((r) => (
                     <div key={r.commentId} className="reply">
@@ -144,15 +172,19 @@ export default function PostDetail({ post, onClose }) {
 
                       <div className="comment-actions">
                         <button onClick={() => setReplyTarget(r.commentId)}>답글</button>
-                        <button
-                          className="comment-delete-btn"
-                          onClick={() => deleteComment(r.commentId)}
-                        >
-                          삭제
-                        </button>
+
+                        {/* 🔥 본인 대댓글일 경우만 삭제 버튼 */}
+                        {currentUser?.username === r.username && (
+                          <button
+                            className="comment-delete-btn"
+                            onClick={() => deleteComment(r.commentId)}
+                          >
+                            삭제
+                          </button>
+                        )}
                       </div>
 
-                      {/* 답글 입력창 (대댓글에도 가능) */}
+                      {/* 대댓글에 다시 답글 */}
                       {replyTarget === r.commentId && (
                         <form
                           className="reply-form"
@@ -176,7 +208,7 @@ export default function PostDetail({ post, onClose }) {
           )}
         </div>
 
-        {/* ------------------- 일반 댓글 작성창 ------------------- */}
+        {/* ------------------- 일반 댓글 작성 ------------------- */}
         <form className="comment-form" onSubmit={handleSubmit}>
           <input
             type="text"

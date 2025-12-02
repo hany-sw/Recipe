@@ -42,9 +42,6 @@ instance.interceptors.response.use(
   }
 );
 
-/* ======================
- *  Auth / Profile
- * ====================== */
 export const signup = (email, username, password, confirmPassword) =>
   instance.post("/signup", { email, username, password, confirmPassword });
 

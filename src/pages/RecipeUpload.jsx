@@ -276,7 +276,7 @@ export default function RecipeUpload() {
                         handleEdit(r);
                       }}
                     >
-                      ✏️ 수정
+                      ✏️수정
                     </button>
 
                     <button
@@ -286,7 +286,7 @@ export default function RecipeUpload() {
                         handleDelete(r.userRecipeId);
                       }}
                     >
-                      🗑 삭제
+                      🗑삭제
                     </button>
                   </div>
                 </div>
