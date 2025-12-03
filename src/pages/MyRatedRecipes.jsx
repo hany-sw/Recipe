@@ -14,7 +14,7 @@ export default function MyRatedRecipes() {
 
   const BASE_URL = "http://210.110.33.220:8183/api";
 
-  // ⭐ 내가 준 평점 + 상세 이미지 불러오기
+  // ⭐ 내가 준 평점 + 이미지 불러오기
   const fetchMyRatings = async () => {
     setLoading(true);
     try {
@@ -50,8 +50,7 @@ export default function MyRatedRecipes() {
               recipeName: title,
               ratingScore: r.ratingScore,
               createdAt: r.createdAt,
-              imageUrl:
-                "https://via.placeholder.com/200x150?text=No+Image",
+              imageUrl: "https://via.placeholder.com/200x150?text=No+Image",
             };
           }
         })
@@ -75,6 +74,7 @@ export default function MyRatedRecipes() {
   const handleUpdateRating = async (rating) => {
     const newScore = prompt("새 평점을 입력하세요 (1~5):", rating.ratingScore);
     if (!newScore) return;
+
     try {
       await axios.put(
         `${BASE_URL}/rating/update`,
@@ -89,6 +89,7 @@ export default function MyRatedRecipes() {
           },
         }
       );
+
       alert("평점이 수정되었습니다.");
       fetchMyRatings();
     } catch {
@@ -124,49 +125,52 @@ export default function MyRatedRecipes() {
       ) : ratedRecipes.length === 0 ? (
         <p className="empty">평점을 준 레시피가 없습니다.</p>
       ) : (
-        <div className="favorite-list">
+        <div className="rated-list">
           {ratedRecipes.map((item) => (
             <div
               key={item.ratingId}
-              className="favorite-card"
+              className="rated-card"
               onClick={() =>
                 navigate("/recipe/details", {
                   state: { title: item.recipeName },
                 })
               }
             >
-              <img
-                src={item.imageUrl}
-                alt={item.recipeName}
-              />
+              {/* 🔥 이미지 표시 (자유게시판 아이콘 위치) */}
+              <div className="rated-img-wrap">
+                <img src={item.imageUrl} alt={item.recipeName} />
+              </div>
 
-              <div className="favorite-info">
-                <h3>{item.recipeName}</h3>
-                <p>⭐ 평점: {item.ratingScore}</p>
-                <p>🕒 {new Date(item.createdAt).toLocaleString()}</p>
+              {/* 오른쪽 내용 */}
+              <div className="rated-body">
+                <div className="rated-title">{item.recipeName}</div>
+                <div className="rated-content-preview">⭐ {item.ratingScore}</div>
 
-                <div className="icon-row">
-                  <span
-                    className="icon edit-icon"
+                <div className="rated-info">
+                  <span>{new Date(item.createdAt).toLocaleString()}</span>
+                </div>
+
+                <div className="post-actions">
+                  <button
+                    className="edit-btn"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleUpdateRating(item);
                     }}
-                   >
-                      ✏️
-                    </span>
+                  >
+                    ✏️ 수정
+                  </button>
 
-                    <span
-                      className="icon delete-icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteRating(item.ratingId);
-                      }}
-                    >
-                      🗑️
-                    </span>
-                  </div>
-
+                  <button
+                    className="delete-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteRating(item.ratingId);
+                    }}
+                  >
+                    🗑 삭제
+                  </button>
+                </div>
               </div>
             </div>
           ))}
