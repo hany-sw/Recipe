@@ -17,7 +17,7 @@ export default function MyPage() {
   });
 
   const navigate = useNavigate();
-  const BASE_URL = "http://localhost:8183/api";
+  const BASE_URL = "http://210.104.76.141:8183/api";
 
   // 기본 프로필 이미지
   const defaultProfileImg =
@@ -73,7 +73,7 @@ export default function MyPage() {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     alert("로그아웃되었습니다.");
-    window.location.href = "/login";
+    navigate("/");
   };
 
   /* ---------------------- 회원탈퇴 ---------------------- */
@@ -90,7 +90,7 @@ export default function MyPage() {
       alert("회원탈퇴가 완료되었습니다.");
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
-      window.location.href = "/signup";
+      navigate("/");
     } catch (err) {
       console.error("회원탈퇴 실패:", err);
       alert("회원탈퇴 중 오류가 발생했습니다.");

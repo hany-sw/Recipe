@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:8183/api";
+const BASE_URL = "http://210.104.76.141:8183/api";
 
 // ✅ 공통 인스턴스
 const instance = axios.create({
@@ -35,7 +35,7 @@ instance.interceptors.response.use(
       } catch (e) {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
-        window.location.href = "/login";
+        window.location.href = "/";
       }
     }
     return Promise.reject(error);

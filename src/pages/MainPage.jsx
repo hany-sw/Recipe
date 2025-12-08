@@ -26,18 +26,20 @@ export default function MainPage() {
 
   // 로그아웃
   const handleLogout = useCallback(async () => {
-    try {
-      await logout();
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      setUserName("");
-      alert("로그아웃되었습니다.");
-      navigate("/login", { replace: true });
-      window.location.reload();
-    } catch (err) {
-      alert(err.response?.data || err.message);
-    }
-  }, [navigate]);
+  try {
+    await logout();
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    setUserName("");
+    alert("로그아웃되었습니다.");
+
+    // 🔥 reload 없이 navigate만 사용해야 SPA 라우팅이 온전히 작동함
+    navigate("/", { replace: true });
+  } catch (err) {
+    alert(err.response?.data || err.message);
+  }
+}, [navigate]);
+
 
   // 검색
   const handleSearch = useCallback(() => {

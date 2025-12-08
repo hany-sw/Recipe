@@ -12,7 +12,7 @@ export default function MyRatedRecipes() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const BASE_URL = "http://localhost:8183/api";
+  const BASE_URL = "http://210.104.76.141:8183/api";
 
   // ⭐ 내가 준 평점 + 이미지 불러오기
   const fetchMyRatings = async () => {

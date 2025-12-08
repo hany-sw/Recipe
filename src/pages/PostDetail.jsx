@@ -5,7 +5,7 @@ import { getProfile } from "../api/api";
 import "../styles/PostDetail.css";
 
 export default function PostDetail({ post, onClose }) {
-  const BASE_URL = "http://localhost:8183/api";
+  const BASE_URL = "http://210.104.76.141:8183/api";
 
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");

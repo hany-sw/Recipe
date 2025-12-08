@@ -15,7 +15,7 @@ export default function MyComments() {
   const [selectedPost, setSelectedPost] = useState(null);
 
   const loaderRef = useRef(null);
-  const BASE_URL = "http://localhost:8183/api";
+  const BASE_URL = "http://210.104.76.141:8183/api";
 
   /* ----------------------------------------------
      🔹 로그인 정보 가져오기

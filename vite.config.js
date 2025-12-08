@@ -9,7 +9,7 @@ export default defineConfig({
     proxy: {
       // "/api"로 시작하는 요청을 자동으로 8081로 전달
       "/api": {
-        target: "http://localhost:8183/api",
+        target: "http://210.104.76.141:8183/api",
         changeOrigin: true,
         secure: false,
       },

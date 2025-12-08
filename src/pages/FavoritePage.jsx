@@ -11,7 +11,7 @@ export default function FavoritePage() {
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const navigate = useNavigate();
 
-  const BASE_URL = "http://localhost:8183/api";
+  const BASE_URL = "http://210.104.76.141:8183/api";
 
   useEffect(() => {
     const fetchFavorites = async () => {
