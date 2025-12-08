@@ -17,7 +17,7 @@ import {
   aiSetDifficulty,
   aiSetMealTime,
   aiSetWeather,
-  aiSetFlavor,              // ⭐ 추가된 API
+  aiSetFlavor,
   aiSetIngredientsAndRecommend,
 } from "../api/api";
 
@@ -26,10 +26,6 @@ import "../styles/MainPage.css";
 export default function AiModeModal({ open, onClose, initial }) {
   const navigate = useNavigate();
 
-  // ---------------------------
-  // 기본 상태 + 초기값
-  // ---------------------------
-
   const safeInitial = useMemo(
     () =>
       initial || {
@@ -37,7 +33,7 @@ export default function AiModeModal({ open, onClose, initial }) {
         allergies: [],
         difficulty: "",
         mealTime: "",
-        flavor: "",        // ⭐ 새로 추가
+        flavor: "",
         weather: "",
         ingredients: "",
       },
@@ -46,14 +42,9 @@ export default function AiModeModal({ open, onClose, initial }) {
 
   const [prefs, setPrefs] = useState(safeInitial);
   const [allergyInput, setAllergyInput] = useState("");
-
-  // step 구조 변경됨
-  const [step, setStep] = useState(0); // 0~6 질문 / 7 = 로딩
+  const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  // ---------------------------
-  // 애니메이션 (자동 높이)
-  // ---------------------------
   const containerRef = useRef(null);
   const contentRef = useRef(null);
   const [containerHeight, setContainerHeight] = useState("auto");
@@ -88,13 +79,8 @@ export default function AiModeModal({ open, onClose, initial }) {
       const id = setInterval(apply, 200);
       return () => clearInterval(id);
     }
-
     return () => ro && ro.disconnect();
   }, [open, step, prefs.allergies.length, loading]);
-
-  // ---------------------------
-  // 공용 함수
-  // ---------------------------
 
   const chip = (active) => `chip ${active ? "active" : ""}`;
   const next = () => setStep((s) => s + 1);
@@ -126,9 +112,6 @@ export default function AiModeModal({ open, onClose, initial }) {
     setAllergyInput("");
   }, [allergyInput]);
 
-  // ---------------------------
-  // AI 실행
-  // ---------------------------
   const runAI = useCallback(async () => {
     if (!prefs.ingredients.trim()) {
       alert("재료를 입력해주세요!");
@@ -140,30 +123,24 @@ export default function AiModeModal({ open, onClose, initial }) {
     }
 
     setLoading(true);
-    setStep(7); // 로딩
+    setStep(7);
 
     try {
       const startRes = await aiStart();
       const sessionId = startRes.data?.sessionId;
+      if (!sessionId) throw new Error("세션 ID 받기 실패");
 
-      if (!sessionId) throw new Error("세션 ID를 받지 못했습니다.");
-
-      // ⭐ 순서대로 백엔드 전송
       if (prefs.foodPreference)
         await aiSetFoodPreference(sessionId, prefs.foodPreference);
-
       if (prefs.mealTime) await aiSetMealTime(sessionId, prefs.mealTime);
       if (prefs.weather) await aiSetWeather(sessionId, prefs.weather);
-
       if (prefs.difficulty) await aiSetDifficulty(sessionId, prefs.difficulty);
+      if (prefs.flavor) await aiSetFlavor(sessionId, prefs.flavor);
 
-      if (prefs.flavor) await aiSetFlavor(sessionId, prefs.flavor); // ⭐ 추가됨
-
-      if (Array.isArray(prefs.allergies) && prefs.allergies.length > 0) {
+      if (prefs.allergies?.length > 0) {
         for (const a of prefs.allergies) await aiSetAllergy(sessionId, a);
       }
 
-      // 마지막: 재료 입력 + 추천 결과 받기
       const recRes = await aiSetIngredientsAndRecommend(
         sessionId,
         prefs.ingredients
@@ -185,7 +162,7 @@ export default function AiModeModal({ open, onClose, initial }) {
             allergies: prefs.allergies,
             difficulty: prefs.difficulty,
             mealTime: prefs.mealTime,
-            flavor: prefs.flavor,   // ⭐ 결과 페이지에도 포함
+            flavor: prefs.flavor,
             weather: prefs.weather,
             ingredients: prefs.ingredients,
           },
@@ -196,20 +173,15 @@ export default function AiModeModal({ open, onClose, initial }) {
       onClose?.();
     } catch (err) {
       console.error("AI 추천 실패:", err);
-      alert(
-        err.response?.data || err.message || "AI 추천 중 오류가 발생했습니다."
-      );
-      setStep(6); // 재료 입력단계로 복귀
+      alert("AI 추천 중 오류가 발생했습니다.");
+      setStep(6);
     } finally {
       setLoading(false);
     }
   }, [navigate, onClose, prefs]);
 
-  // ---------------------------
-  // 렌더링 시작
-  // ---------------------------
-
-  if (!open) return <div style={{ display: "none" }} aria-hidden="true" />;
+  if (!open)
+    return <div style={{ display: "none" }} aria-hidden="true" />;
 
   const containerStyle = {
     width: "min(720px, 92vw)",
@@ -242,39 +214,32 @@ export default function AiModeModal({ open, onClose, initial }) {
         </button>
 
         <div ref={contentRef} className="ai-content">
-          {/* 제목 */}
           {step <= 6 && <h2 className="ai-title">🤖 AI 추천 모드</h2>}
           {step === 7 && (
             <h2 className="ai-title">🤖 AI가 레시피를 찾는 중…</h2>
           )}
 
           {/* ---------------------------- */}
-          {/* 0) 선호 음식 */}
-          {/* ---------------------------- */}
+          {/* 0단계 */}
           {step === 0 && (
             <section className="ai-row ai-center">
-              <h4 className="ai-question">
-                안녕하세요! 오늘 어떤 음식을 드시고 싶으신가요?
-              </h4>
+              <h4 className="ai-question">안녕하세요! 오늘 어떤 음식을 드시고 싶으신가요?</h4>
               <div className="choice-grid">
-                {["한식", "양식", "중식", "일식", "동남아", "그 외"].map(
-                  (c) => (
-                    <button
-                      key={c}
-                      className={chip(prefs.foodPreference === c)}
-                      onClick={() => setSingle("foodPreference", c)}
-                    >
-                      {c}
-                    </button>
-                  )
-                )}
+                {["한식", "양식", "중식", "일식", "동남아", "그 외"].map((c) => (
+                  <button
+                    key={c}
+                    className={chip(prefs.foodPreference === c)}
+                    onClick={() => setSingle("foodPreference", c)}
+                  >
+                    {c}
+                  </button>
+                ))}
               </div>
             </section>
           )}
 
           {/* ---------------------------- */}
-          {/* 1) 알러지 */}
-          {/* ---------------------------- */}
+          {/* 1단계: 알러지 */}
           {step === 1 && (
             <section className="ai-row ai-center">
               <h4 className="ai-question">알러지는 있으신가요?</h4>
@@ -315,17 +280,14 @@ export default function AiModeModal({ open, onClose, initial }) {
               )}
 
               <div className="ai-actions row">
-                <button onClick={prev}>이전</button>
-                <button className="start-ai-btn" onClick={next}>
-                  다음
-                </button>
+                <button className="nav-btn prev" onClick={prev}>이전</button>
+                <button className="nav-btn next" onClick={next}>다음</button>
               </div>
             </section>
           )}
 
           {/* ---------------------------- */}
-          {/* 2) 난이도 */}
-          {/* ---------------------------- */}
+          {/* 2단계 */}
           {step === 2 && (
             <section className="ai-row ai-center">
               <h4 className="ai-question">요리 난이도는 어떤 걸 원하시나요?</h4>
@@ -342,17 +304,14 @@ export default function AiModeModal({ open, onClose, initial }) {
               </div>
 
               <div className="ai-actions row">
-                <button onClick={prev}>이전</button>
-                <button className="start-ai-btn" onClick={next}>
-                  다음
-                </button>
+                <button className="nav-btn prev" onClick={prev}>이전</button>
+                <button className="nav-btn next" onClick={next}>다음</button>
               </div>
             </section>
           )}
 
           {/* ---------------------------- */}
-          {/* 3) 끼니 */}
-          {/* ---------------------------- */}
+          {/* 3단계 */}
           {step === 3 && (
             <section className="ai-row ai-center">
               <h4 className="ai-question">식사 시간대는 언제인가요?</h4>
@@ -369,22 +328,27 @@ export default function AiModeModal({ open, onClose, initial }) {
               </div>
 
               <div className="ai-actions row">
-                <button onClick={prev}>이전</button>
-                <button className="start-ai-btn" onClick={next}>
-                  다음
-                </button>
+                <button className="nav-btn prev" onClick={prev}>이전</button>
+                <button className="nav-btn next" onClick={next}>다음</button>
               </div>
             </section>
           )}
 
           {/* ---------------------------- */}
-          {/* 4) ⭐ 선호 맛 (새로 추가!) */}
-          {/* ---------------------------- */}
+          {/* 4단계: 맛 */}
           {step === 4 && (
             <section className="ai-row ai-center">
               <h4 className="ai-question">어떤 맛을 선호하시나요?</h4>
               <div className="choice-grid">
-                {["단맛","짠맛","매운맛","고소함","담백함","새콤함","그 외",].map((f) => (
+                {[
+                  "단맛",
+                  "짠맛",
+                  "매운맛",
+                  "고소함",
+                  "담백함",
+                  "새콤함",
+                  "그 외",
+                ].map((f) => (
                   <button
                     key={f}
                     className={chip(prefs.flavor === f)}
@@ -396,17 +360,14 @@ export default function AiModeModal({ open, onClose, initial }) {
               </div>
 
               <div className="ai-actions row">
-                <button onClick={prev}>이전</button>
-                <button className="start-ai-btn" onClick={next}>
-                  다음
-                </button>
+                <button className="nav-btn prev" onClick={prev}>이전</button>
+                <button className="nav-btn next" onClick={next}>다음</button>
               </div>
             </section>
           )}
 
           {/* ---------------------------- */}
-          {/* 5) 날씨 */}
-          {/* ---------------------------- */}
+          {/* 5단계: 날씨 */}
           {step === 5 && (
             <section className="ai-row ai-center">
               <h4 className="ai-question">오늘 날씨는 어떤가요?</h4>
@@ -423,17 +384,14 @@ export default function AiModeModal({ open, onClose, initial }) {
               </div>
 
               <div className="ai-actions row">
-                <button onClick={prev}>이전</button>
-                <button className="start-ai-btn" onClick={next}>
-                  다음
-                </button>
+                <button className="nav-btn prev" onClick={prev}>이전</button>
+                <button className="nav-btn next" onClick={next}>다음</button>
               </div>
             </section>
           )}
 
           {/* ---------------------------- */}
-          {/* 6) 재료 입력 */}
-          {/* ---------------------------- */}
+          {/* 재료 입력 */}
           {step === 6 && (
             <section className="ai-row ai-center">
               <h4 className="ai-question">
@@ -449,8 +407,8 @@ export default function AiModeModal({ open, onClose, initial }) {
               />
 
               <div className="ai-actions row">
-                <button onClick={prev}>이전</button>
-                <button className="start-ai-btn" onClick={runAI} disabled={loading}>
+                <button className="nav-btn prev" onClick={prev}>이전</button>
+                <button className="nav-btn next" onClick={runAI} disabled={loading}>
                   {loading ? "추천 중..." : "확인 → 추천 받기"}
                 </button>
               </div>
@@ -458,8 +416,7 @@ export default function AiModeModal({ open, onClose, initial }) {
           )}
 
           {/* ---------------------------- */}
-          {/* 7) 로딩 */}
-          {/* ---------------------------- */}
+          {/* 로딩 */}
           {step === 7 && (
             <section className="ai-row ai-center">
               <div className="spinner" />
@@ -473,7 +430,8 @@ export default function AiModeModal({ open, onClose, initial }) {
         <style>
           {`
             .spinner {
-              width: 32px; height: 32px;
+              width: 32px;
+              height: 32px;
               border-radius: 50%;
               border: 3px solid #e0e0e0;
               border-top-color: #7c5cff;

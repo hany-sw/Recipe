@@ -11,7 +11,7 @@ export default function SearchResult() {
   const params = new URLSearchParams(location.search);
   const ingredient = params.get("ingredient");
 
-  const BASE_URL = "http://210.110.33.220:8183/api";
+  const BASE_URL = "http://localhost:8183/api";
 
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);

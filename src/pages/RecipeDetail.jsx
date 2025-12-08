@@ -6,7 +6,7 @@ import "../styles/RecipeDetail.css";
 
 export default function RecipeDetail() {
   const location = useLocation();
-  const BASE_URL = "http://210.110.33.220:8183/api";
+  const BASE_URL = "http://localhost:8183/api";
 
   // 라우팅 데이터
   const passedRecipe = location.state?.recipe;

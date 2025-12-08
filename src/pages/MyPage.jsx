@@ -17,7 +17,7 @@ export default function MyPage() {
   });
 
   const navigate = useNavigate();
-  const BASE_URL = "http://210.110.33.220:8183/api";
+  const BASE_URL = "http://localhost:8183/api";
 
   // 기본 프로필 이미지
   const defaultProfileImg =

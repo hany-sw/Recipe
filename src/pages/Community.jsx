@@ -18,7 +18,7 @@ export default function Community() {
   const [selectedPost, setSelectedPost] = useState(null);
 
   const BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || "http://210.110.33.220:8183/api";
+    import.meta.env.VITE_API_BASE_URL || "http://localhost:8183/api";
 
   /* -----------------------------------------------------------
      🔹 로그인 유저 정보 가져오기

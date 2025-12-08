@@ -489,3 +489,74 @@ body {
     padding: 9px 12px;
   }
 }
+.ai-actions.row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+   align-items: center;
+}
+
+/* 공통 버튼 스타일 */
+.ai-actions.row button,
+.ai-actions.row .start-ai-btn {
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  min-width: 90px;
+  height: 42px;
+}
+
+/* 이전 버튼 스타일 */
+.ai-actions.row button:first-child {
+  background: #f6f6f6;
+  border: 1px solid #ddd;
+  color: #333;
+}
+
+/* 다음 버튼은 기존 보라색 스타일 유지 */
+.start-ai-btn {
+  background: #7c5cff;
+  border: none;
+  color: #fff;
+}
+/* ==============================
+   네비게이션 버튼 (이전 / 다음)
+============================== */
+.ai-actions.row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 공통 스타일 */
+.nav-btn {
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  min-width: 90px;
+  height: 42px;
+  cursor: pointer;
+}
+
+/* 이전 버튼 */
+.nav-btn.prev {
+  background: #f6f6f6;
+  border: 1px solid #ddd;
+  color: #333;
+}
+
+/* 다음 버튼 */
+.nav-btn.next {
+  background: #7c5cff;
+  border: none;
+  color: #fff;
+}
+
+/* 비활성화 */
+.nav-btn.next:disabled {
+  opacity: .6;
+  cursor: default;
+}

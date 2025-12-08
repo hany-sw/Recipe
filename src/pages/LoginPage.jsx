@@ -19,11 +19,11 @@ export default function LoginPage() {
       await login(email, password);
 
       // ✅ 로그인 후 프로필 불러오기
-      const profile = await getProfile();
-      localStorage.setItem("userName", profile.username); // 이름 저장
+      const{data} = await getProfile();
+      localStorage.setItem("userName", data.username); // 이름 저장
       localStorage.setItem("isLoggedIn", "true");
 
-      alert(`${profile.username}님 환영합니다!`);
+      alert(`${data.username}님 환영합니다!`);
       navigate("/"); // ✅ 메인 페이지로 이동
     } catch (err) {
       alert(err.response?.data?.message || "로그인 실패. 다시 시도해주세요.");
